@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = b'$q\xd3~\xb8I_\x86\x14\x90\xebu\xf8\xc3e$\x8b\xd5\x12\xe6\x14u\xf4z'
 
 # From Flask Todo App Tutorial
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
@@ -43,6 +43,13 @@ def login():
         return redirect('/login')
     else:
         return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    # remove the username from the session if it's there
+    session.pop('username', None)
+    return redirect('home.html')
+
 
 if __name__ == '__main__':
     with app.app_context():
