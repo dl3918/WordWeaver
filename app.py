@@ -33,6 +33,17 @@ class Event(db.Model):
 def home():
     return render_template('home.html')
 
+@app.route('/login', methods=['GET','POST'])
+def login():
+    if (request.method == 'POST'):
+        username = request.form.get("username")
+        password = request.form.get("password")
+        print(username)
+        print(password)
+        return redirect('/login')
+    else:
+        return render_template('login.html')
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

@@ -39,37 +39,29 @@
                                 <span class="">Create an Account to Save Learning Progress or Start Reading Now!</span>
                             </div>
                             <div class="center-container">
-                                <button class="long blue" style="height: fit-content;">
-                                    <span>Log In</span>
-                                </button>
-                                <button onmouseleave="lighten('signup')" onmouseover="darken('signup')" id='signup' class="long white" style="height: fit-content; border-color: #aaa; background:#fff">
-                                    <span style="color: #3066be">Sign Up</span>
-                                </button>
+                                <form action="/login">
+                                    <button id="login" class="long blue" style="height: fit-content;">
+                                        <span>Log In</span>
+                                    </button>
+                                    <button id='signup' class="long white" style="height: fit-content; border-color: #aaa; background:#fff">
+                                        <span style="color: #3066be">Sign Up</span>
+                                    </button>
+                                </form>
                             </div>
+                            <form action="/getstarted">
+                                <div class="center-container">
+                                    <button id='signup' class="long white" style="height: fit-content; border-color: #aaa; background:#fff">
+                                        <span style="color: #3066be">Get Started Now!</span>
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
         <script>
-            function rgbToHex(string) {
-                var triplet = string.split('(')[1].split(')')[0].split(',');
-                var hex = []
-                for (var i in triplet) {
-                    hex = hex + parseInt(triplet[i]).toString(16);
-                }
-                console.log(hex);
-            }
-            function darken(id) {
-                var background = window.getComputedStyle(document.getElementById(id)).getPropertyValue('background');
-                rgbToHex(background);
-                document.getElementById(id).setAttribute('style', 'border-color: #999');
-                document.getElementById(id).setAttribute('style', 'background: #f8f8f8')
-            }
-            function lighten(id) {
-                document.getElementById(id).setAttribute('style', 'border-color: #aaa');
-                document.getElementById(id).setAttribute('style', 'background: #fff')
-            }
+            
         </script>
         <script src="" async defer></script>
     </body>

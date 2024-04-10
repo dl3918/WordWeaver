@@ -158,8 +158,58 @@ button.blue {
     color: #fff;
 }
 
+button.blue:hover {
+    background: #3268C0;
+}
+
 button.white {
     background:#fff;
     color: #3066be;
     border-color: #aaa
+}
+
+button.white:hover {
+    background: #aaa
+}
+
+body {
+    animation: fadeInAnimation ease 1s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+}
+@keyframes fadeInAnimation {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.ui.top {
+    margin-top:25px;
+}
+
+input.login {
+    font-size: 24px;
+    background-color: white;
+    border: 1px solid rgba(34,36,38,.15);
+    border-radius: 15px; /* Rounded border */
+    font-size: 18px; /* Font size */
+    padding: 5px; /* Padding around the text */
+    font-weight: 350; /* Thin text */
+    text-align: left;
+    line-height: 28px;
+}
+
+.clear-input {
+    margin-left: -20px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #767676 !important;
+    opacity: .5;
+}
+
+.main-col {
+    display: flex; flex-direction: column; margin: auto;  border: 1px solid #ddd; background: #fff; border-radius: 8px;
 }
