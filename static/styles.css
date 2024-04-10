@@ -1,0 +1,215 @@
+.center-container {
+    margin: 10px;
+    text-align: center;
+    box-sizing: inherit;
+}
+
+select.custom-select {
+    background-color: white;
+    border: 1px solid rgba(34,36,38,.15);
+    border-radius: 5px; /* Rounded border */
+    font-size: 18px; /* Font size */
+    padding: 5px; /* Padding around the text */
+    font-weight: bold; /* Bold text */
+    text-align: center;
+  }
+
+.top-bar {
+    display: flex;
+    align-items: center;
+    height: 45px;
+    background-color: #f3f3f3;
+}
+
+.ui {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+    padding: 0;
+    margin: -1rem;
+}
+
+.row {
+    display: flex;
+    justify-content: center; /* Centers children horizontally within the row */
+    width: 100% !important;
+    padding-left: 1rem;
+}
+
+.left.aligned {
+    text-align: left;
+}
+
+.column {
+    max-width: 800px; /* Maxes out at 800px */
+    width: 100%; /* Takes the width of its parent up to 800px */
+    padding: 10px;
+    /* border: 1px solid #ddd; */
+    /* border-radius: 5px; */
+}
+
+.two-col {
+    max-width: 25% !important;
+}
+.four-col {
+    max-width: 75% !important;
+}
+
+.huge {
+    font-size: 1.25em;
+    font-weight: 400;
+}
+
+
+/* Buttons */
+button {
+    border: 1px solid rgba(34,36,38,.15);
+    border-radius: .28571429rem;
+    transition: box-shadow .1s ease,border-color .1s ease;
+    box-shadow: none;
+    bottom: 1px;
+    cursor: pointer;
+}
+
+.button-row {
+    box-shadow: none;
+    border: 1px solid rgba(34,36,38,.15);
+    border-radius: .28571429rem;
+    display: inline-flex;
+}
+button.char {
+    padding: 10px 14px;
+    border-radius: 0rem;
+}
+
+.ui-divider {
+    border-top: 1px solid rgba(34,36,38,.15);
+    border-bottom: 1px solid hsla(0,0%,100%,.1);
+}
+
+div.word {
+    font-size: 18px;
+    padding-bottom:5px;
+    font-weight: 450;
+    margin-left: 5px;
+}
+
+div.definition {
+    padding-top:5px;
+    margin-left: 5px;
+}
+
+.icon {
+    cursor: pointer;
+    line-height: 2.5;
+    text-align: center;
+    top: 0;
+    right: 0;
+    margin: 0;
+    height: 100%;
+    width: 2.67142857em;
+    opacity: .5;
+    border-radius: 0 .28571429rem .28571429rem 0;
+    transition: opacity .3s ease;
+    color: #767676 !important;
+    display: inline-block;
+    font-family: Icons;
+    font-style: normal;
+    font-weight: 400;
+    text-decoration: inherit;
+}
+
+span.top-bar {
+    color: #777;
+    margin-left: 12px;
+    font-style: italic;
+}
+
+li {
+    font-size: 20px;
+    margin:10px
+}
+
+span.description {
+    color: #777;
+    font-style: italic;
+    text-align: right;
+}
+
+span.tabular {
+    font-size:18px;
+    padding:5px;
+}
+
+
+.urbanist-main {
+  font-family: "Urbanist", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+button.long {
+    padding: 10px 35px;
+}
+
+button.blue {
+    background: #3066be;
+    color: #fff;
+}
+
+button.blue:hover {
+    background: #3268C0;
+}
+
+button.white {
+    background:#fff;
+    color: #3066be;
+    border-color: #aaa
+}
+
+button.white:hover {
+    background: #aaa
+}
+
+body {
+    animation: fadeInAnimation ease 1s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+}
+@keyframes fadeInAnimation {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.ui.top {
+    margin-top:25px;
+}
+
+input.login {
+    font-size: 24px;
+    background-color: white;
+    border: 1px solid rgba(34,36,38,.15);
+    border-radius: 15px; /* Rounded border */
+    font-size: 18px; /* Font size */
+    padding: 5px; /* Padding around the text */
+    font-weight: 350; /* Thin text */
+    text-align: left;
+    line-height: 28px;
+}
+
+.clear-input {
+    margin-left: -20px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #767676 !important;
+    opacity: .5;
+}
+
+.main-col {
+    display: flex; flex-direction: column; margin: auto;  border: 1px solid #ddd; background: #fff; border-radius: 8px;
+}

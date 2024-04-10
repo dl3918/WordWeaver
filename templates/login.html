@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="../static/styles.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+    </head>
+    <body style="background: #eee;">
+        <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+        <main>
+            <div class="urbanist-main">
+                <div class="ui top" style="margin-top:0px; height: 100vh">
+                    <div class="row" style="align-items: center;">
+                        <div class="left aligned column main-col" style="max-width: 400px;margin:auto">
+                            <div style="display:flex; flex-direction: row;">
+                                <form action="/"><button style="background: none; border: none" class="icon">&#x2715;</button></form>
+                                <div class="center-container" style="width: 100%;">
+                                    <span style="font-weight:450; font-size: 26px;">Log In</span>
+                                </div>
+                            </div>
+                            <form action="/login" method="POST">
+                                <div class="center-container" style="width: 100%">
+                                        <input id="username" name="username" class="login" style="padding-right:20px" placeholder="Email or username">
+                                    <span class="clear-input" onclick="clearInput('username')">&times;</span>
+                                </div>
+                                <div class="center-container" style="width: 100%; margin-top:0px">
+                                    <input id="password" name="password" class="login" style="padding-right:20px" placeholder="Password">
+                                    <span class="clear-input" onclick="clearInput('password')">&times;</span>
+                                </div>
+                                <div class="center-container" style="width: 100%; margin-top:0px">
+                                        <button class="blue long" style="padding-left:100px; padding-right:130px; border-radius: 15px; font-variant: small-caps;">log in</button>
+                                </div>
+                            </form>
+                            <div class="ui-divider"></div>
+                            <div class="center-container"><span class="description">or</span></div>
+                            <form action="/signup">
+                                <div class="center-container">
+                                        <button class="white long" style="margin-left: 20px; padding-left:100px; padding-right:130px; border-radius: 15px; font-variant: small-caps;">sign up</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <script>
+            function clearInput(id){
+                document.getElementById(id).value = "";
+            }
+        </script>
+        <script src="" async defer></script>
+    </body>
+</html>
