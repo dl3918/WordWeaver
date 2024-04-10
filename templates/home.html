@@ -11,13 +11,17 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="../static/styles.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
     </head>
     <body>
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
         <main>
-            <div style='font-family: Roboto, "Helvetica Neue", Arial, Helvetica, sans-serif;'>
+            <div class="urbanist-main">
                 <div class="ui">
                     <div class="row">
                         <div class="left aligned column" style="display:flex">
@@ -30,13 +34,43 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="left aligned column" style="height: 100vh; display: flex; align-content: center;">
-                            <button style="height: fit-content;">hello</button>
+                        <div class="left aligned column" style="height: 60vh; display: flex; flex-direction: column;  justify-content: center; margin: auto;">
+                            <div class="center-container">
+                                <span class="">Create an Account to Save Learning Progress or Start Reading Now!</span>
+                            </div>
+                            <div class="center-container">
+                                <button class="long blue" style="height: fit-content;">
+                                    <span>Log In</span>
+                                </button>
+                                <button onmouseleave="lighten('signup')" onmouseover="darken('signup')" id='signup' class="long white" style="height: fit-content; border-color: #aaa; background:#fff">
+                                    <span style="color: #3066be">Sign Up</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
+        <script>
+            function rgbToHex(string) {
+                var triplet = string.split('(')[1].split(')')[0].split(',');
+                var hex = []
+                for (var i in triplet) {
+                    hex = hex + parseInt(triplet[i]).toString(16);
+                }
+                console.log(hex);
+            }
+            function darken(id) {
+                var background = window.getComputedStyle(document.getElementById(id)).getPropertyValue('background');
+                rgbToHex(background);
+                document.getElementById(id).setAttribute('style', 'border-color: #999');
+                document.getElementById(id).setAttribute('style', 'background: #f8f8f8')
+            }
+            function lighten(id) {
+                document.getElementById(id).setAttribute('style', 'border-color: #aaa');
+                document.getElementById(id).setAttribute('style', 'background: #fff')
+            }
+        </script>
         <script src="" async defer></script>
     </body>
 </html>
