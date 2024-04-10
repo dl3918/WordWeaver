@@ -16,7 +16,7 @@
         <link href="https://fonts.googleapis.com/css2?&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
     </head>
-    <body>
+    <body onload="loadText()">
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
@@ -34,34 +34,33 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="left aligned column" style="height: 60vh; display: flex; flex-direction: column;  justify-content: center; margin: auto;">
-                            <div class="center-container">
-                                <span class="">Create an Account to Save Learning Progress or Start Reading Now!</span>
-                            </div>
-                            <div class="center-container">
-                                <form action="/login">
-                                    <button id="login" class="long blue" style="height: fit-content;">
-                                        <span>Log In</span>
-                                    </button>
-                                    <button id='signup' class="long white" style="height: fit-content; border-color: #aaa; background:#fff">
-                                        <span style="color: #3066be">Sign Up</span>
-                                    </button>
-                                </form>
-                            </div>
-                            <form action="/read">
-                                <div class="center-container">
-                                    <button id='signup' class="long white" style="height: fit-content; border-color: #aaa; background:#fff">
-                                        <span style="color: #3066be">Get Started Now!</span>
-                                    </button>
-                                </div>
-                            </form>
+                        <div class="left aligned column main-col" style="max-width: 800px;margin:auto">
+                            <p id="text"></p>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
         <script>
-            
+            function getRandomInt(max) {
+                return Math.floor(Math.random() * max);
+            }       
+            function loadText() {
+                fetch ("../static/texts-jp.json")
+                     .then((res) => {
+                        if (!res.ok) {
+                            throw new Error 
+                                (`HTTP error! Status: $(res.status)`);
+                        }
+                        return res.json();
+                     })
+                     .then((data) =>{
+                        
+                        document.getElementById('text').innerHTML = data.texts[getRandomInt(data.texts.length)].text;
+                        return 0;
+                     })
+                     .catch((error) => console.error("Unable to fetch data:", error));
+            }
         </script>
         <script src="" async defer></script>
     </body>

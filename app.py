@@ -38,8 +38,6 @@ def login():
     if (request.method == 'POST'):
         username = request.form.get("username")
         password = request.form.get("password")
-        print(username)
-        print(password)
         return redirect('/login')
     else:
         return render_template('login.html')
@@ -50,6 +48,9 @@ def logout():
     session.pop('username', None)
     return redirect('home.html')
 
+@app.route('/read')
+def guest():
+    return render_template('language.html')
 
 if __name__ == '__main__':
     with app.app_context():

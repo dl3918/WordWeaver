@@ -16,7 +16,7 @@
         <link href="https://fonts.googleapis.com/css2?&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
     </head>
-    <body style="background: #eee;">
+    <body onload="clearInput('username'); clearInput('password'); clearCheckBox('checkbox')" style="background: #eee;">
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
@@ -26,7 +26,7 @@
                     <div class="row" style="align-items: center;">
                         <div class="left aligned column main-col" style="max-width: 400px;margin:auto">
                             <div style="display:flex; flex-direction: row;">
-                                <form action="/"><button style="background: none; border: none" class="icon">&#x2715;</button></form>
+                                <form action="/" style="margin-right:-35.1655px"><button style="background: none; border: none" class="icon">&#x2715;</button></form>
                                 <div class="center-container" style="width: 100%;">
                                     <span style="font-weight:450; font-size: 26px;">Log In</span>
                                 </div>
@@ -37,9 +37,10 @@
                                     <span class="clear-input" onclick="clearInput('username')">&times;</span>
                                 </div>
                                 <div class="center-container" style="width: 100%; margin-top:0px">
-                                    <input id="password" name="password" class="login" style="padding-right:20px" placeholder="Password">
+                                    <input id="password" type="password" name="password" class="login" style="padding-right:20px" placeholder="Password">
                                     <span class="clear-input" onclick="clearInput('password')">&times;</span>
                                 </div>
+                                <div class="center-container"><input id="checkbox" type="checkbox" onclick="showPassword()">Show Password</div>
                                 <div class="center-container" style="width: 100%; margin-top:0px">
                                         <button class="blue long" style="padding-left:100px; padding-right:130px; border-radius: 15px; font-variant: small-caps;">log in</button>
                                 </div>
@@ -59,6 +60,17 @@
         <script>
             function clearInput(id){
                 document.getElementById(id).value = "";
+            }
+            function clearCheckBox(id) {
+                document.getElementById(id).value = "off";
+            }
+            function showPassword() {
+            var x = document.getElementById("password");
+            if (x.type === "password") {
+                x.type = "text";
+            } else {
+                x.type = "password";
+            }
             }
         </script>
         <script src="" async defer></script>
