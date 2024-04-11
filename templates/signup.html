@@ -28,28 +28,40 @@
                             <div style="display:flex; flex-direction: row;">
                                 <form action="/" style="margin-right:-35.1655px"><button style="background: none; border: none" class="icon">&#x2715;</button></form>
                                 <div class="center-container" style="width: 100%;">
-                                    <span style="font-weight:450; font-size: 26px;">Log In</span>
+                                    <span style="font-weight:450; font-size: 26px;">Sign Up </span>
                                 </div>
                             </div>
-                            <form action="/login" method="POST">
+                            <form action="/signup" method="POST">
                                 <div class="center-container" style="width: 100%">
-                                        <input id="username" name="username" class="login" style="padding-right:20px" placeholder="Email or username">
+                                        <input id="username" name="username" class="login" style="padding-right:20px" placeholder="Username" required>
                                     <span class="clear-input" onclick="clearInput('username')">&times;</span>
                                 </div>
                                 <div class="center-container" style="width: 100%; margin-top:0px">
-                                    <input id="password" type="password" name="password" class="login" style="padding-right:20px" placeholder="Password">
+                                    <input id="password" type="password" name="password" class="login" style="padding-right:20px" placeholder="Password" required>
                                     <span class="clear-input" onclick="clearInput('password')">&times;</span>
+                                </div>
+                                <div class="center-container" style="width: 100%; margin-top:0px">
+                                    <input id="password_confirmation" type="password" name="password_confirmation" class="login" style="padding-right:20px" placeholder="Confirm Password" required>
+                                    <span class="clear-input" onclick="clearInput('password_confirmation')">&times;</span>
+                                </div>
+                                <div class="center-container" style="width: 100%; margin-top:0px">
+                                    <input id="email" type="text" name="email" class="login" style="padding-right:20px" placeholder="Email" required>
+                                    <span class="clear-input" onclick="clearInput('email')">&times;</span>
+                                </div>
+                                <div class="center-container" style="width: 100%; margin-top:0px">
+                                    <input id="email_confirmation" type="text" name="email_confirmation" class="login" style="padding-right:20px" placeholder="Email Confirmation" required>
+                                    <span class="clear-input" onclick="clearInput('email_confirmation')">&times;</span>
                                 </div>
                                 <div class="center-container"><input id="checkbox" type="checkbox" onclick="showPassword()">Show Password</div>
                                 <div class="center-container" style="width: 100%; margin-top:0px">
-                                        <button class="blue long" style="padding-left:100px; padding-right:130px; border-radius: 15px; font-variant: small-caps;">log in</button>
+                                        <button class="blue long" style="padding-left:100px; padding-right:130px; border-radius: 15px; font-variant: small-caps;">sign up</button>
                                 </div>
                             </form>
                             <div class="ui-divider"></div>
                             <div class="center-container"><span class="description">or</span></div>
-                            <form action="/signup">
+                            <form action="/login">
                                 <div class="center-container">
-                                        <button class="white long" style="margin-left: 20px; padding-left:100px; padding-right:130px; border-radius: 15px; font-variant: small-caps;">sign up</button>
+                                        <button class="white long" style="margin-left: 20px; padding-left:100px; padding-right:130px; border-radius: 15px; font-variant: small-caps;">Log In</button>
                                 </div>
                             </form>
                         </div>

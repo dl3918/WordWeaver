@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="../static/styles.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+    </head>
+    <body onload="loadText()">
+        <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+        <main>
+            {% if language == "jp" %}
+                <input type="hidden" value="jp" id="language">
+            {% elif language == "cn"  %}
+            <input type="hidden" value="cn" id="language">
+            {% endif %}
+
+            <div class="urbanist-main">
+                <div class="ui">
+                    <div class="row">
+                        <div onclick="home()" class="left aligned column" style="display:flex">
+                            <div class="two-col">
+                                <img style=width:100% src="../static/wordweaverlogo.png">
+                            </div>
+                            <div class="four-col" style="padding-left: 1rem; font-weight:500; font-size:32px; display: flex; align-items: center;">
+                                <span class="huge">Word Weaver</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="left aligned column main-col" style="max-width: 800px;margin:auto">
+                            <div class="center-container" id="text"></div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:15px">
+                        <form action="/logout">
+                            <button class="blue long">
+                                Log Out
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <script>
+            function getRandomInt(max) {
+                return Math.floor(Math.random() * max);
+            }       
+            function loadText() {
+                var language = document.getElementById("language").value;
+                console.log(language);
+                fetch ("../static/texts-" + language + ".json")
+                     .then((res) => {
+                        if (!res.ok) {
+                            throw new Error 
+                                (`HTTP error! Status: $(res.status)`);
+                        }
+                        return res.json();
+                     })
+                     .then((data) =>{
+                        var index = getRandomInt(data.texts.length);
+                        var span = "";
+                        if (data.texts[index].author == "") { span = "No Author Attributable"; }
+                        else { span = data.texts[index].author }
+                        document.getElementById('text').innerHTML = `
+                        <p>` + data.texts[index].text + `</p> 
+                        <span>` + span + `</span>`;
+                        return 0;
+                     })
+                     .catch((error) => console.error("Unable to fetch data:", error));
+            }
+        </script>
+        <script>
+            function home() {
+                window.location.href = "/"
+            }
+        </script>
+        <script src="" async defer></script>
+    </body>
+</html>
