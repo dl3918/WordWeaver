@@ -21,10 +21,16 @@
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
         <main>
+            {% if language == "jp" %}
+                <input type="hidden" value="jp" id="language">
+            {% elif language == "cn"  %}
+            <input type="hidden" value="cn" id="language">
+            {% endif %}
+
             <div class="urbanist-main">
                 <div class="ui">
                     <div class="row">
-                        <div class="left aligned column" style="display:flex">
+                        <div onclick="home()" class="left aligned column" style="display:flex">
                             <div class="two-col">
                                 <img style=width:100% src="../static/wordweaverlogo.png">
                             </div>
@@ -35,8 +41,15 @@
                     </div>
                     <div class="row">
                         <div class="left aligned column main-col" style="max-width: 800px;margin:auto">
-                            <p id="text"></p>
+                            <div class="center-container" id="text"></div>
                         </div>
+                    </div>
+                    <div class="row" style="margin-top:15px">
+                        <form action="/logout">
+                            <button class="blue long">
+                                Log Out
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -46,7 +59,9 @@
                 return Math.floor(Math.random() * max);
             }       
             function loadText() {
-                fetch ("../static/texts-jp.json")
+                var language = document.getElementById("language").value;
+                console.log(language);
+                fetch ("../static/texts-" + language + ".json")
                      .then((res) => {
                         if (!res.ok) {
                             throw new Error 
@@ -55,11 +70,21 @@
                         return res.json();
                      })
                      .then((data) =>{
-                        
-                        document.getElementById('text').innerHTML = data.texts[getRandomInt(data.texts.length)].text;
+                        var index = getRandomInt(data.texts.length);
+                        var span = "";
+                        if (data.texts[index].author == "") { span = "No Author Attributable"; }
+                        else { span = data.texts[index].author }
+                        document.getElementById('text').innerHTML = `
+                        <p>` + data.texts[index].text + `</p> 
+                        <span>` + span + `</span>`;
                         return 0;
                      })
                      .catch((error) => console.error("Unable to fetch data:", error));
+            }
+        </script>
+        <script>
+            function home() {
+                window.location.href = "/"
             }
         </script>
         <script src="" async defer></script>

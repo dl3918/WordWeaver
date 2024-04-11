@@ -83,6 +83,10 @@ button.char {
     border-radius: 0rem;
 }
 
+button.equal {
+    width: 250px;
+}
+
 .ui-divider {
     border-top: 1px solid rgba(34,36,38,.15);
     border-bottom: 1px solid hsla(0,0%,100%,.1);
@@ -212,4 +216,19 @@ input.login {
 
 .main-col {
     display: flex; flex-direction: column; margin: auto;  border: 1px solid #ddd; background: #fff; border-radius: 8px;
+}
+
+button.clickable {
+    cursor: pointer;
+    padding: 15px 25px;
+}
+
+.half {
+    width: 50%
+}
+
+div.rounded {
+    border: 2px #aaa;
+    border-radius: 8px;
+    transition: box-shadow .1s ease,border-color .1s ease;
 }
