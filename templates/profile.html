@@ -16,17 +16,11 @@
         <link href="https://fonts.googleapis.com/css2?&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
     </head>
-    <body onload="loadText()">
+    <body>
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
         <main>
-            {% if language == "jp" %}
-                <input type="hidden" value="jp" id="language">
-            {% elif language == "cn"  %}
-            <input type="hidden" value="cn" id="language">
-            {% endif %}
-
             <div class="urbanist-main">
                 <div style="display:flex; flex-direction: row;">
                     <div class="sidebar" style="flex-direction: column;">
@@ -34,7 +28,7 @@
                         <div style="display: flex; flex-direction: column; margin-top:15px; width:90%">
                             <div class="sidebar-item" >
                                 <form action="/read" style="width:100%">
-                                    <button class="long smallcaps-text" style="width:100%; color:black; border:0px; background: #ddd; border: 1px solid #3066be">
+                                    <button class="white long smallcaps-text" style="width:100%; color:black; border:0px;">
                                         read
                                     </button>
                                 </form>
@@ -55,7 +49,7 @@
                             </div>
                             <div class="sidebar-item" >
                                 <form action="/profile" style="width:100%">
-                                    <button class="white long smallcaps-text" style="width:100%; color:black; border:0px">
+                                    <button class="long smallcaps-text" style="width:100%; color:black; border:0px; background: #ddd; border: 1px solid #3066be">
                                         profile
                                     </button>
                                 </form>
@@ -71,53 +65,29 @@
                     </div>
                     <div class="ui" style="width:100%; justify-content: center;overflow: scroll;max-height: 100vh;">
                         <div class="row" style="height:fit-content">
-                                <div onclick="home()" class="left aligned column" style="display:flex">
-                                    <div class="two-col">
-                                        <img style=width:100% src="../static/wordweaverlogo.png">
-                                    </div>
+                                <div class="left aligned column centered" style="display:flex; padding-top:10%">
                                     <div class="four-col" style="padding-left: 1rem; font-weight:500; font-size:32px; display: flex; align-items: center;">
-                                        <span class="huge">Word Weaver</span>
+                                        <span class="huge">{{ username }}</span>
                                     </div>
                                 </div>
                         </div>
-                        <div style="flex-direction: column;">
-                            <div class="left aligned column main-col" style="max-width: 800px">
-                                <div class="center-container" id="text"></div>
-                            </div>
+                        <div class="center-container" style="flex-direction: column; padding-top:0px">
+                            Reading since
                         </div>   
+                        <div class="center-container">
+                            <span>Current Language:</span>
+                            <form action="/select+language">
+                                {% if language == "cn" %}
+                                <button class="white clickable" name="language" id="cn" value="cn"><img style="width: 40px" src="../static/cnflag.png"></button>
+                                {% elif language == "jp" %}
+                                <button class="white clickable" name="language" id="jp" value="jp"><img style="width: 40px" src="../static/jpflag.png"></button>
+                                {% endif %}
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
-        <script>
-            function getRandomInt(max) {
-                return Math.floor(Math.random() * max);
-            }       
-            function loadText() {
-                var language = document.getElementById("language").value;
-                console.log(language);
-                fetch ("../static/texts-" + language + ".json")
-                     .then((res) => {
-                        if (!res.ok) {
-                            throw new Error 
-                                (`HTTP error! Status: $(res.status)`);
-                        }
-                        return res.json();
-                     })
-                     .then((data) =>{
-                        var index = getRandomInt(data.texts.length);
-                        var span = "";
-                        if (data.texts[index].author == "") { span = "No Author Attributable"; }
-                        else { span = data.texts[index].author }
-                        document.getElementById('text').innerHTML = `
-                        <p>` + data.texts[index].text + `</p> 
-                        <span>` + span + `</span>`;
-                        return 0;
-                     })
-                     .catch((error) => console.error("Unable to fetch data:", error));
-            }
-        </script>
         <script>
             function home() {
                 window.location.href = "/"

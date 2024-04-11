@@ -113,17 +113,31 @@ def select_language():
         return render_template('select.html')
     else:
         language = request.form.get("language")
-        if session['user']:
-            username = session['user']
-            user = db.one_or_404(db.select(User).filter_by(username=username))
-            user.language = language
+        try:
+            if session['user']:
+                username = session['user']
+                user = db.one_or_404(db.select(User).filter_by(username=username))
+                user.language = language
+        except:
+            print()
         session['language'] = language
         db.session.commit()
         return redirect('/read')
     
 @app.route('/read')
 def read():
+    try: 
+        session['user']
+    except:
+        return render_template('language-guest.html', language=session['language'])
     return render_template('language.html', language=session['language'])
 
+@app.route('/profile')
+def profile():
+    try:
+        session['user']
+    except:
+        return redirect('/')
+    return render_template('profile.html', username=session['user'], language=session['language'])
 if __name__ == '__main__':
     app.run(ssl_context=('cert.pem', 'key.pem'), debug=True)
