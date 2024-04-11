@@ -6,6 +6,7 @@ it, or not.
 import random
 import string
 from flask import Flask, render_template, redirect, request, session, flash
+from sqlalchemy.sql import func
 from sqlalchemy.types import LargeBinary
 from flask_sqlalchemy import SQLAlchemy
 import os
@@ -47,7 +48,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False, unique=True)
     email = db.Column(db.String(255, collation='NOCASE'), nullable=False, unique=True)
-    email_confirmed_at = db.Column(db.DateTime())
+    email_confirmed_at = db.Column(db.DateTime(), server_default=func.now())
     password = db.Column(db.String(255), nullable=False, server_default='')
     language = db.Column(db.String(255), nullable=False, server_default='cn')
     salt = db.Column(db.LargeBinary(255), nullable=False, server_default='')
@@ -127,7 +128,9 @@ def select_language():
 @app.route('/read')
 def read():
     try: 
-        session['user']
+        username = session['user']
+        user = db.one_or_404(db.select(User).filter_by(username=username))
+        language = user.language
     except:
         return render_template('language-guest.html', language=session['language'])
     return render_template('language.html', language=session['language'])
@@ -135,9 +138,13 @@ def read():
 @app.route('/profile')
 def profile():
     try:
-        session['user']
+        username = session['user']
+        user = db.one_or_404(db.select(User).filter_by(username=username))
+        language = user.language
+        starttime = user.email_confirmed_at
+        starttime = starttime.strftime("%d %B, %Y")
     except:
         return redirect('/')
-    return render_template('profile.html', username=session['user'], language=session['language'])
+    return render_template('profile.html', username=session['user'], language=session['language'], starttime=starttime)
 if __name__ == '__main__':
     app.run(ssl_context=('cert.pem', 'key.pem'), debug=True)
