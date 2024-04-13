@@ -25,6 +25,11 @@
                 <div class="ui top" style="margin-top:0px; height: 100vh">
                     <div class="row" style="align-items: center; height:100%">
                         <div class="left aligned column main-col" style="max-width: 400px;margin:auto">
+                            {% if incorrect %}
+                                <div class="center-container" style="width: 100%;">
+                                    <span style="font-weight:450; font-size: 18px; color: red">Incorrect Password or Username. Try Again.</span>
+                                </div>
+                                {% endif %}
                             <div style="display:flex; flex-direction: row;">
                                 <form action="/" style="margin-right:-35.1655px"><button style="background: none; border: none" class="icon">&#x2715;</button></form>
                                 <div class="center-container" style="width: 100%;">

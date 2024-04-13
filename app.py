@@ -16,6 +16,8 @@ import hashlib
 import hmac
 from typing import Tuple
 
+import spacy
+
 app = Flask(__name__)
 app.secret_key = b'$q\xd3~\xb8I_\x86\x14\x90\xebu\xf8\xc3e$\x8b\xd5\x12\xe6\x14u\xf4z'
 
@@ -74,11 +76,14 @@ def login():
         except:
             flash("Invalid Username")
             return redirect('/login')
-        session['user'] = user.username
-        session['language'] = user.language
-        return redirect('/read')
+        if (is_correct_password(user.salt, user.password, password)):
+            session['user'] = user.username
+            session['language'] = user.language
+            return redirect('/read')
+        else:
+            return render_template('login.html', incorrect=True)
     else:
-        return render_template('login.html')
+        return render_template('login.html', incorrect=False)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -147,4 +152,4 @@ def profile():
         return redirect('/')
     return render_template('profile.html', username=session['user'], language=session['language'], starttime=starttime)
 if __name__ == '__main__':
-    app.run(ssl_context=('cert.pem', 'key.pem'), debug=True)
+    app.run(debug=True)
