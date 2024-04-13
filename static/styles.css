@@ -22,16 +22,14 @@ select.custom-select {
 }
 
 .ui {
-    display: flex;
-    flex-direction: row;
     flex-wrap: wrap;
-    align-items: stretch;
     padding: 0;
     margin: -1rem;
 }
 
 .row {
     display: flex;
+    flex-direction: row;
     justify-content: center; /* Centers children horizontally within the row */
     width: 100% !important;
     padding-left: 1rem;
@@ -231,4 +229,28 @@ div.rounded {
     border: 2px #aaa;
     border-radius: 8px;
     transition: box-shadow .1s ease,border-color .1s ease;
+}
+.sidebar {
+    display: flex;
+    width: 20%;
+    padding-top:2rem;
+    align-items: center;
+    border-right: 2px solid #aaa;
+    height: 95vh;
+    z-index: 2;
+}
+
+.sidebar-item {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    margin-top:20px
+}
+.smallcaps-text {
+    font-size: 18px;
+    font-variant: small-caps;;
+}
+
+.centered {
+    justify-content: center;
 }

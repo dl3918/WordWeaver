@@ -29,47 +29,7 @@
 
             <div class="urbanist-main">
                 <div style="display:flex; flex-direction: row;">
-                    <div class="sidebar" style="flex-direction: column;">
-                        <img style="height: 40px" src="../static/wordweaverlogo.png">
-                        <div style="display: flex; flex-direction: column; margin-top:15px; width:90%">
-                            <div class="sidebar-item" >
-                                <form action="/read" style="width:100%">
-                                    <button class="long smallcaps-text" style="width:100%; color:black; border:0px; background: #ddd; border: 1px solid #3066be">
-                                        read
-                                    </button>
-                                </form>
-                            </div>
-                            <div class="sidebar-item" >
-                                <form action="/read" style="width:100%">
-                                    <button class="white long smallcaps-text" style="width:100%; color:black; border:0px">
-                                        write
-                                    </button>
-                                </form>
-                            </div>
-                            <div class="sidebar-item" >
-                                <form action="/vocab" style="width:100%">
-                                    <button class="white long smallcaps-text" style="width:100%; color:black; border:0px">
-                                        vocabulary
-                                    </button>
-                                </form>
-                            </div>
-                            <div class="sidebar-item" >
-                                <form action="/profile" style="width:100%">
-                                    <button class="white long smallcaps-text" style="width:100%; color:black; border:0px">
-                                        profile
-                                    </button>
-                                </form>
-                            </div>
-                            <div class="sidebar-item" >
-                                <form action="/logout" style="width:100%">
-                                    <button class="white long smallcaps-text" style="width:100%; color:black; border:0px">
-                                        log out
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ui" style="width:100%; overflow: scroll; max-height: 100vh; display: inline-block;">
+                    <div class="ui" style="width:100%; justify-content: center;">
                         <div class="row" style="height:fit-content">
                                 <div onclick="home()" class="left aligned column" style="display:flex">
                                     <div class="two-col">
@@ -83,6 +43,13 @@
                         <div style="flex-direction: column;">
                             <div class="left aligned column main-col" style="max-width: 800px">
                                 <div class="center-container" id="text" style="text-align: left;"></div>
+                            </div>
+                            <div>
+                                <form action="/logout" style="width:100%; display:flex; justify-content: center;">
+                                    <button class="white long smallcaps-text" style="width:fit-content; color:black; border:0px">
+                                        return home
+                                    </button>
+                                </form>
                             </div>
                         </div>   
                         </div>

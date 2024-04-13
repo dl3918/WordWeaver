@@ -6,6 +6,7 @@ it, or not.
 import random
 import string
 from flask import Flask, render_template, redirect, request, session, flash
+from sqlalchemy.sql import func
 from sqlalchemy.types import LargeBinary
 from flask_sqlalchemy import SQLAlchemy
 import os
@@ -14,6 +15,8 @@ from datetime import datetime, timedelta
 import hashlib
 import hmac
 from typing import Tuple
+
+import spacy
 
 app = Flask(__name__)
 app.secret_key = b'$q\xd3~\xb8I_\x86\x14\x90\xebu\xf8\xc3e$\x8b\xd5\x12\xe6\x14u\xf4z'
@@ -47,7 +50,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False, unique=True)
     email = db.Column(db.String(255, collation='NOCASE'), nullable=False, unique=True)
-    email_confirmed_at = db.Column(db.DateTime())
+    email_confirmed_at = db.Column(db.DateTime(), server_default=func.now())
     password = db.Column(db.String(255), nullable=False, server_default='')
     language = db.Column(db.String(255), nullable=False, server_default='cn')
     salt = db.Column(db.LargeBinary(255), nullable=False, server_default='')
@@ -73,11 +76,14 @@ def login():
         except:
             flash("Invalid Username")
             return redirect('/login')
-        session['user'] = user.username
-        session['language'] = user.language
-        return redirect('/read')
+        if (is_correct_password(user.salt, user.password, password)):
+            session['user'] = user.username
+            session['language'] = user.language
+            return redirect('/read')
+        else:
+            return render_template('login.html', incorrect=True)
     else:
-        return render_template('login.html')
+        return render_template('login.html', incorrect=False)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -113,17 +119,37 @@ def select_language():
         return render_template('select.html')
     else:
         language = request.form.get("language")
-        if session['user']:
-            username = session['user']
-            user = db.one_or_404(db.select(User).filter_by(username=username))
-            user.language = language
+        try:
+            if session['user']:
+                username = session['user']
+                user = db.one_or_404(db.select(User).filter_by(username=username))
+                user.language = language
+        except:
+            print()
         session['language'] = language
         db.session.commit()
         return redirect('/read')
     
 @app.route('/read')
 def read():
+    try: 
+        username = session['user']
+        user = db.one_or_404(db.select(User).filter_by(username=username))
+        language = user.language
+    except:
+        return render_template('language-guest.html', language=session['language'])
     return render_template('language.html', language=session['language'])
 
+@app.route('/profile')
+def profile():
+    try:
+        username = session['user']
+        user = db.one_or_404(db.select(User).filter_by(username=username))
+        language = user.language
+        starttime = user.email_confirmed_at
+        starttime = starttime.strftime("%d %B, %Y")
+    except:
+        return redirect('/')
+    return render_template('profile.html', username=session['user'], language=session['language'], starttime=starttime)
 if __name__ == '__main__':
-    app.run(ssl_context=('cert.pem', 'key.pem'), debug=True)
+    app.run(debug=True)
