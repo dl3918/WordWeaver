@@ -208,61 +208,7 @@ def seed_vocabulary():
 
 
 # test code for generating story, not ready!!!
-from sqlalchemy.orm import sessionmaker
-import random
-import requests  # Import the requests library
-import json
-import logging
 
-@app.route('/generate-story', methods=['GET'])
-def generate_story():
-    if 'user' not in session:
-        return redirect('/login')
-    
-    level = request.args.get('level', default='new')
-    num_words = int(request.args.get('num_words', default=2))
-
-    # Simulating a database call here to get vocabulary
-    # You should replace this with actual database query logic
-    user_id = User.query.filter_by(username=session['user']).first().id
-    vocab_list = Vocabulary.query.filter_by(user_id=user_id, level=level).all()
-
-    if len(vocab_list) < num_words:
-        return "Not enough words in the selected level", 400
-
-    selected_words = random.sample([vocab.chinese_word for vocab in vocab_list], num_words)
-    prompt = f"Write a creative story of about 100 words using these words: {', '.join(selected_words)}."
-
-    # Using requests to call OpenAI API
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'myapikey'
-    }
-
-    data = {
-        'model': 'gpt-3.5-turbo',
-        'prompt': prompt,
-        'max_tokens': 1200,
-        'n': 1,
-        'stop': None,
-        'temperature': 1.0
-    }
-
-    try:
-        response = requests.post('https://api.openai.com/v1/completions', headers=headers, json=data)
-        response.raise_for_status()  # Will raise an HTTPError for bad responses
-        data = response.json()
-        if 'choices' in data and data['choices']:
-            story = data['choices'][0]['text'].strip()
-            return render_template('story.html', story=story, prompt=prompt)
-        else:
-            logging.error("OpenAI response lacked 'choices': " + str(data))
-            return "Failed to generate story, no choices returned."
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Request failed: {e}")
-        return "Failed to generate story due to a network error."
-
-    return "An unexpected error occurred."
 
 if __name__ == '__main__':
     app.run(debug=True)
