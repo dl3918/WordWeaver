@@ -14,7 +14,7 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-
+        <script src="//mandarinspot.com/static/mandarinspot.min.js" charset="UTF-8"></script>
     </head>
     <body onload="loadText()">
         <!--[if lt IE 7]>
@@ -96,7 +96,7 @@
             }       
             function loadText() {
                 var language = document.getElementById("language").value;
-                console.log(language);
+                //console.log(language);
                 fetch ("../static/texts-" + language + ".json")
                      .then((res) => {
                         if (!res.ok) {
@@ -110,9 +110,13 @@
                         var span = "";
                         if (data.texts[index].author == "") { span = "No Author Attributable"; }
                         else { span = data.texts[index].author }
-                        document.getElementById('text').innerHTML = `
-                        <p>` + data.texts[index].text + `</p> 
-                        <span>` + span + `</span>`;
+                        var container = document.getElementById('text');
+                        container.innerHTML = `<p>${data.texts[index].text}</p><span>${span}</span>`;
+                        if (language === 'cn') {
+                            mandarinspot.annotate(container);
+                            mandarinspot.showPopups(true);
+                            //mandarinspot.showInline("visible")
+                        }
                         return 0;
                      })
                      .catch((error) => console.error("Unable to fetch data:", error));
