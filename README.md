@@ -4,6 +4,7 @@ Final Project CS178
 ## To use:
 - First, initialize a virtual environment (venv)
 ```
+python3 -m venv .venv
 source .venv/bin/activate
 ```
 

@@ -4,6 +4,7 @@ Scheduling App which tells YOU when you will be meeting, whether you like
 it, or not.
 """
 import random
+import json
 import string
 from flask import Flask, render_template, redirect, request, session, flash
 from sqlalchemy.sql import func
@@ -17,6 +18,23 @@ import hmac
 from typing import Tuple
 
 import spacy
+nlp = spacy.load("ja_ginza")
+# doc = nlp('銀座でランチをご一緒しましょう。')
+# for sent in doc.sents:
+#     for token in sent:
+#         print(
+#             token.i,
+#             token.orth_,
+#             token.lemma_,
+#             token.norm_,
+#             token.morph.get("Reading"),
+#             token.pos_,
+#             token.morph.get("Inflection"),
+#             token.tag_,
+#             token.dep_,
+#             token.head.i,
+#         )
+#     print('EOS')
 
 app = Flask(__name__)
 app.secret_key = b'$q\xd3~\xb8I_\x86\x14\x90\xebu\xf8\xc3e$\x8b\xd5\x12\xe6\x14u\xf4z'
@@ -130,15 +148,37 @@ def select_language():
         db.session.commit()
         return redirect('/read')
     
+
+def spanify(language, text):
+    spans = []
+    if (language == 'jp'):
+        doc = nlp(text)
+        for sentence in doc.sents:
+            for token in sentence:
+                spans.append(token.orth_)
+    elif (language == 'cn'):
+        for i in text:
+            spans += i
+    return spans
+
 @app.route('/read')
-def read():
+def read():    
     try: 
         username = session['user']
         user = db.one_or_404(db.select(User).filter_by(username=username))
         language = user.language
     except:
-        return render_template('language-guest.html', language=session['language'])
-    return render_template('language.html', language=session['language'])
+        language = session['language']
+        with open('static/texts-' + language + '.json') as f:
+            data = json.load(f)
+            story = data['texts'][random.randint(0,len(data['texts']) - 1)]
+            spans = spanify(language, story['text'])
+        return render_template('language-guest.html', language=language, spans=spans)
+    with open('static/texts-' + language + '.json') as f:
+            data = json.load(f)
+            story = data['texts'][random.randint(0,len(data['texts']) - 1)]
+            spans = spanify(language, story['text'])
+    return render_template('language.html', language=session['language'], spans=spans)
 
 @app.route('/profile')
 def profile():

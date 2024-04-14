@@ -254,3 +254,15 @@ div.rounded {
 .centered {
     justify-content: center;
 }
+
+span.inline {
+    margin-bottom: 20px;
+    display: inline-block;
+}
+
+span.inline:hover {
+    background: yellow;
+    padding: 5px;
+    border-radius: 8px;
+    font-size: 20px;
+}
