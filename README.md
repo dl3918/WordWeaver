@@ -14,7 +14,7 @@ source .venv/bin/activate
 - Install required dependency, e.g., Ginza, spacy, flask, flask_sqlalchemy
 
 ```
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 
