@@ -4,7 +4,7 @@ learning App which helps you learn vocabulary with tailored stories.
 """
 import random
 import string
-from flask import Flask, render_template, redirect, request, session, flash
+from flask import Flask, render_template, redirect, request, session, flash, jsonify
 from sqlalchemy.sql import func
 from sqlalchemy.types import LargeBinary
 from flask_sqlalchemy import SQLAlchemy
@@ -23,8 +23,6 @@ os.environ['FLASK_DEBUG'] = '1'  # Explicitly enable debug mode
 
 app = Flask(__name__)
 app.secret_key = b'$q\xd3~\xb8I_\x86\x14\x90\xebu\xf8\xc3e$\x8b\xd5\x12\xe6\x14u\xf4z'
-openai.api_key = os.getenv("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")  # Set my OpenAI key
-
 
 # From Flask Todo App Tutorial
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
@@ -206,8 +204,51 @@ def seed_vocabulary():
     return "Vocabulary seeded successfully!"
 
 
+from sqlalchemy.orm import sessionmaker
+import random
+import requests  # Import the requests library
+import json
+import logging
+from openai import OpenAI
 
-# test code for generating story, not ready!!!
+@app.route('/generate-story', methods=['GET'])
+def generate_story():
+    if 'user' not in session:
+        return redirect('/login')
+
+    level = request.args.get('level', default='new')
+    num_words = int(request.args.get('num_words', default=2))
+
+    user_id = User.query.filter_by(username=session['user']).first().id
+    vocab_list = Vocabulary.query.filter_by(user_id=user_id, level=level).all()
+
+    if len(vocab_list) < num_words:
+        return "Not enough words in the selected level", 400
+
+
+    selected_words = random.sample([vocab.chinese_word for vocab in vocab_list], num_words)
+    prompt = f"请用中文写一段大概100个词的段落，包含以下词汇: {', '.join(selected_words)}."
+
+    client = OpenAI(api_key="removed for security reason")
+
+    # Create the chat messages structure for OpenAI API
+    message = [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": prompt}
+    ]
+
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=message
+            )
+        story = completion.choices[0].message.content
+        return jsonify({"story": story}), 200
+    except Exception as e:
+        logging.error(f"OpenAI request failed: {e}")
+        return "Failed to generate story due to a network error."
+
+    return "An unexpected error occurred."
 
 
 if __name__ == '__main__':
