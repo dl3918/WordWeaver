@@ -85,6 +85,8 @@ class User(db.Model):
     password = db.Column(db.String(255), nullable=False, server_default='')
     language = db.Column(db.String(255), nullable=False, server_default='cn')
     salt = db.Column(db.LargeBinary(255), nullable=False, server_default='')
+    vocabularies = db.relationship('Vocabulary', back_populates='user', lazy='dynamic') # include a back reference
+
 
 class Vocabulary(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -116,6 +118,7 @@ def login():
             user = db.one_or_404(db.select(User).filter_by(username=username))
             print("user found")
         except:
+            print("user not found")
             flash("Invalid Username")
             return redirect('/login')
         if (is_correct_password(user.salt, user.password, password)):
@@ -203,14 +206,15 @@ def read():
             user_id = User.query.filter_by(username=session['user']).first().id
 
             # Define initial vocabulary
-            vocab = {'chinese_word': dictInfo.kanji_forms, 'level': 'new', 'user_id': user_id, 'translation' : dictInfo.senses, 'pronunciation': dictInfo.kana_forms},
-
-            # Add to database if not already present
-            if not Vocabulary.query.filter_by(chinese_word=vocab['chinese_word'], user_id=user_id).first():
-                new_vocab = Vocabulary(**vocab)
-                db.session.add(new_vocab)
-            
-            db.session.commit()
+            vocab = []
+            for sense in dictInfo.senses:
+                vocab.append({'chinese_word': str(dictInfo.kanji_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
+            for vocab_item in vocab:
+                # Add to database if not already present
+                if not Vocabulary.query.filter_by(chinese_word=vocab_item['chinese_word'], user_id=user_id).first():
+                    new_vocab = Vocabulary(**vocab_item)
+                    db.session.add(new_vocab)
+                    db.session.commit()
         return redirect('/read')
     else:
         try: 
