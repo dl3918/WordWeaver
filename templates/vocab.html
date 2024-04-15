@@ -17,7 +17,7 @@
                 <div style="display: flex; flex-direction: column; margin-top:15px; width:90%">
                     <div class="sidebar-item" >
                         <form action="/read" style="width:100%">
-                            <button class="long smallcaps-text" style="width:100%; color:black; border:0px; background: #ddd; border: 1px solid #3066be">
+                            <button class="white long smallcaps-text" style="width:100%; color:black; border:0px;">
                                 read
                             </button>
                         </form>
@@ -31,7 +31,7 @@
                     </div>
                     <div class="sidebar-item" >
                         <form action="/vocab" style="width:100%">
-                            <button class="white long smallcaps-text" style="width:100%; color:black; border:0px">
+                            <button class="long smallcaps-text" style="width:100%; color:black; background: #ddd; border: 1px solid #3066be">
                                 vocabulary
                             </button>
                         </form>
@@ -54,17 +54,21 @@
             </div>
             <div class="ui" style="width:100%; overflow: scroll; max-height: 100vh; display: inline-block;">
                 <div style="flex-direction: column;">
-                    <div class="left aligned column main-col" style="max-width: 800px">
+                    <div class="left aligned column main-col" style="max-width: 800px; margin-top: 150px;">
                         <div class="center-container" id="text" style="text-align: left;">
                             <h1 class="huge">Your Vocabulary List</h1>
+                            <form action="/vocab" method="POST">
                             {% for level, words in vocab.items() %}
                                 <h2>{{ level.capitalize() }}</h2>
                                 <ul>
                                 {% for word in words %}
-                                    <li>{{ word }}</li>
+                                    <li><span style="font-weight: 600;font-size: 26px;">{{ word.word }}</span>{% if word.pronunciation != "" %}<span>&nbsp;[{{ word.pronunciation}}]</span>{% endif %}&nbsp;<button value="{{ word.word }}" name="delete" style="margin-bottom:5px" class="white">—</button>
+                                        <p>{{ word.sense }}</p>
+                                    </li>
                                 {% endfor %}
                                 </ul>
                             {% endfor %}
+                        </form>
                         </div>
                     </div>
                 </div>

@@ -71,6 +71,7 @@ def is_correct_password(salt: bytes, pw_hash: bytes, password: str) -> bool:
 
 def dictLookUp(string):
     result = jam.lookup(string)
+    print(result.entries)
     if not result.entries:
         out = result.names
     else:
@@ -186,10 +187,11 @@ def spanify(language, text):
         id = 0
         for sentence in doc.sents:
             for token in sentence:
-                if (token.orth_ == 'る'):
+                print(token.morph.get("Inflection"))
+                if (token.orth_ in ['る', 'て', 'う', 'つ', 'す', 'む', 'ぬ', 'ぶ']):
                     spans[len(spans) - 1]['orth'] += token.orth_
                 else:
-                    spans.append({'id' : id, 'orth' : token.orth_})
+                    spans.append({'id' : id, 'orth' : token.orth_, 'lemma' : token.lemma_})
                     id += 1
     elif (language == 'cn'):
         id = 0
@@ -210,8 +212,13 @@ def read():
 
             # Define initial vocabulary
             vocab = []
+            print(dictInfo.kana_forms[0])
+            print(dictInfo.kanji_forms[0])
             for sense in dictInfo.senses:
-                vocab.append({'chinese_word': str(dictInfo.kanji_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
+                if len(dictInfo.kanji_forms) > 0:
+                    vocab.append({'chinese_word': str(dictInfo.kanji_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
+                else:
+                    vocab.append({'chinese_word': str(dictInfo.kana_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
             for vocab_item in vocab:
                 # Add to database if not already present
                 if not Vocabulary.query.filter_by(chinese_word=vocab_item['chinese_word'], user_id=user_id).first():
@@ -250,16 +257,27 @@ def profile():
     return render_template('profile.html', username=session['user'], language=session['language'], starttime=starttime)
 
 
-@app.route('/vocab')
+@app.route('/vocab', methods=['GET', 'POST'])
 def vocab():
-    if 'user' not in session:
-        return redirect('/login')
-    user_id = User.query.filter_by(username=session['user']).first().id
-    vocab_list = Vocabulary.query.filter_by(user_id=user_id).all()
-    vocab_dict = {'new': [], 'familiar': [], 'confident': []}
-    for vocab in vocab_list:
-        vocab_dict[vocab.level].append(vocab.chinese_word)
-    return render_template('vocab.html', vocab=vocab_dict)
+    if (request.method == "POST"):
+        if request.form.get('delete'):
+            delete = request.form.get('delete')
+            user = User.query.filter_by(username=session['user']).first()
+            Vocabulary.query.filter_by(user_id=user.id, chinese_word=delete).delete()
+            db.session.commit()
+            return redirect('/vocab')
+        else:
+            return redirect('/vocab')
+    else:
+        if 'user' not in session:
+            return redirect('/login')
+        user_id = User.query.filter_by(username=session['user']).first().id
+        vocab_list = Vocabulary.query.filter_by(user_id=user_id).all()
+        vocab_dict = {'new': [], 'familiar': [], 'confident': []}
+        for vocab in vocab_list:
+            print(vocab.pronunciation)
+            vocab_dict[vocab.level].append({'word' : vocab.chinese_word, 'sense' : vocab.translation.split('(')[0], 'pronunciation' : vocab.pronunciation})
+        return render_template('vocab.html', vocab=vocab_dict)
 
 
 @app.route('/seed-vocabulary')
