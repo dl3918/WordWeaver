@@ -256,7 +256,7 @@ def vocab():
         return redirect('/login')
     user_id = User.query.filter_by(username=session['user']).first().id
     vocab_list = Vocabulary.query.filter_by(user_id=user_id).all()
-    vocab_dict = {'new': ["书本", "洗澡"], 'familiar': ["早上"], 'confident': ["你好", "我"]}
+    vocab_dict = {'new': [], 'familiar': [], 'confident': []}
     for vocab in vocab_list:
         vocab_dict[vocab.level].append(vocab.chinese_word)
     return render_template('vocab.html', vocab=vocab_dict)
@@ -269,22 +269,24 @@ def seed_vocabulary():
     user_id = User.query.filter_by(username=session['user']).first().id
 
     # Define initial vocabulary
-    initial_vocab = [
-        {'chinese_word': '书本', 'level': 'new', 'user_id': user_id},
-        {'chinese_word': '洗澡', 'level': 'new', 'user_id': user_id},
-        {'chinese_word': '早上', 'level': 'familiar', 'user_id': user_id},
-        {'chinese_word': '你好', 'level': 'confident', 'user_id': user_id},
-        {'chinese_word': '我', 'level': 'confident', 'user_id': user_id}
-    ]
+    if (session['language'] == 'cn'):
 
-    # Add to database if not already present
-    for vocab in initial_vocab:
-        if not Vocabulary.query.filter_by(chinese_word=vocab['chinese_word'], user_id=user_id).first():
-            new_vocab = Vocabulary(**vocab)
-            db.session.add(new_vocab)
-    
-    db.session.commit()
-    return "Vocabulary seeded successfully!"
+        initial_vocab = [
+            {'chinese_word': '书本', 'level': 'new', 'user_id': user_id},
+            {'chinese_word': '洗澡', 'level': 'new', 'user_id': user_id},
+            {'chinese_word': '早上', 'level': 'familiar', 'user_id': user_id},
+            {'chinese_word': '你好', 'level': 'confident', 'user_id': user_id},
+            {'chinese_word': '我', 'level': 'confident', 'user_id': user_id}
+        ]
+
+        # Add to database if not already present
+        for vocab in initial_vocab:
+            if not Vocabulary.query.filter_by(chinese_word=vocab['chinese_word'], user_id=user_id).first():
+                new_vocab = Vocabulary(**vocab)
+                db.session.add(new_vocab)
+        
+        db.session.commit()
+        return "Vocabulary seeded successfully!"
 
 
 from sqlalchemy.orm import sessionmaker
