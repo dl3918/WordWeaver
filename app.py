@@ -86,6 +86,16 @@ class User(db.Model):
     language = db.Column(db.String(255), nullable=False, server_default='cn')
     salt = db.Column(db.LargeBinary(255), nullable=False, server_default='')
 
+class Vocabulary(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    chinese_word = db.Column(db.String(100), nullable=False)
+    translation = db.Column(db.String(100), nullable=False)
+    pronunciation = db.Column(db.String(100), server_default='')
+    level = db.Column(db.String(50), nullable=False)  # Values: 'new', 'familiar', 'confident'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    user = db.relationship('User', back_populates='vocabularies')
+
 with app.app_context():
         db.create_all()
         
