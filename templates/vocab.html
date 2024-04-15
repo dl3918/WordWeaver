@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vocabulary List</title>
+    <link rel="stylesheet" href="../static/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1 class="huge">Your Vocabulary List</h1>
+    {% for level, words in vocab.items() %}
+        <h2>{{ level.capitalize() }}</h2>
+        <ul>
+        {% for word in words %}
+            <li>{{ word }}</li>
+        {% endfor %}
+        </ul>
+    {% endfor %}
+</body>
+</html>

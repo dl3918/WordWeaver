@@ -1,13 +1,12 @@
 """
-This file contains the main content for the ScheduleKing App, an Alternative 
-Scheduling App which tells YOU when you will be meeting, whether you like
-it, or not.
+This file contains the main content for the WordWeaver App, a language  
+learning App which helps you learn vocabulary with tailored stories.
 """
 import random
 import json
 import numpy as np
 import string
-from flask import Flask, render_template, redirect, request, session, flash
+from flask import Flask, render_template, redirect, request, session, flash, jsonify
 from sqlalchemy.sql import func
 from sqlalchemy.types import LargeBinary
 from flask_sqlalchemy import SQLAlchemy
@@ -38,6 +37,10 @@ nlp = spacy.load("ja_ginza")
 #             token.head.i,
 #         )
 #     print('EOS')
+import openai
+import spacy
+os.environ['FLASK_ENV'] = 'development'  # Activates development environment, which turns on the debugger and reloader
+os.environ['FLASK_DEBUG'] = '1'  # Explicitly enable debug mode
 
 app = Flask(__name__)
 app.secret_key = b'$q\xd3~\xb8I_\x86\x14\x90\xebu\xf8\xc3e$\x8b\xd5\x12\xe6\x14u\xf4z'
@@ -245,5 +248,91 @@ def profile():
     except:
         return redirect('/')
     return render_template('profile.html', username=session['user'], language=session['language'], starttime=starttime)
+
+
+@app.route('/vocab')
+def vocab():
+    if 'user' not in session:
+        return redirect('/login')
+    user_id = User.query.filter_by(username=session['user']).first().id
+    vocab_list = Vocabulary.query.filter_by(user_id=user_id).all()
+    vocab_dict = {'new': ["书本", "洗澡"], 'familiar': ["早上"], 'confident': ["你好", "我"]}
+    for vocab in vocab_list:
+        vocab_dict[vocab.level].append(vocab.chinese_word)
+    return render_template('vocab.html', vocab=vocab_dict)
+
+
+@app.route('/seed-vocabulary')
+def seed_vocabulary():
+    if 'user' not in session:
+        return redirect('/login')
+    user_id = User.query.filter_by(username=session['user']).first().id
+
+    # Define initial vocabulary
+    initial_vocab = [
+        {'chinese_word': '书本', 'level': 'new', 'user_id': user_id},
+        {'chinese_word': '洗澡', 'level': 'new', 'user_id': user_id},
+        {'chinese_word': '早上', 'level': 'familiar', 'user_id': user_id},
+        {'chinese_word': '你好', 'level': 'confident', 'user_id': user_id},
+        {'chinese_word': '我', 'level': 'confident', 'user_id': user_id}
+    ]
+
+    # Add to database if not already present
+    for vocab in initial_vocab:
+        if not Vocabulary.query.filter_by(chinese_word=vocab['chinese_word'], user_id=user_id).first():
+            new_vocab = Vocabulary(**vocab)
+            db.session.add(new_vocab)
+    
+    db.session.commit()
+    return "Vocabulary seeded successfully!"
+
+
+from sqlalchemy.orm import sessionmaker
+import random
+import requests  # Import the requests library
+import json
+import logging
+from openai import OpenAI
+
+@app.route('/generate-story', methods=['GET'])
+def generate_story():
+    if 'user' not in session:
+        return redirect('/login')
+
+    level = request.args.get('level', default='new')
+    num_words = int(request.args.get('num_words', default=2))
+
+    user_id = User.query.filter_by(username=session['user']).first().id
+    vocab_list = Vocabulary.query.filter_by(user_id=user_id, level=level).all()
+
+    if len(vocab_list) < num_words:
+        return "Not enough words in the selected level", 400
+
+
+    selected_words = random.sample([vocab.chinese_word for vocab in vocab_list], num_words)
+    prompt = f"请用中文写一段大概100个词的段落，包含以下词汇: {', '.join(selected_words)}."
+
+    client = OpenAI(api_key="removed for security reason")
+
+    # Create the chat messages structure for OpenAI API
+    message = [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": prompt}
+    ]
+
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=message
+            )
+        story = completion.choices[0].message.content
+        return jsonify({"story": story}), 200
+    except Exception as e:
+        logging.error(f"OpenAI request failed: {e}")
+        return "Failed to generate story due to a network error."
+
+    return "An unexpected error occurred."
+
+
 if __name__ == '__main__':
     app.run(debug=True)
