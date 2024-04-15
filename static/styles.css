@@ -258,11 +258,23 @@ div.rounded {
 span.inline {
     margin-bottom: 20px;
     display: inline-block;
+    cursor: pointer;
 }
 
 span.inline:hover {
     background: yellow;
-    padding: 5px;
     border-radius: 8px;
-    font-size: 20px;
+    width: ;
+}
+
+div.popup{
+    background:beige;
+    padding:5px;
+    display: none;
+    z-index: 2;
+    position:absolute;
+    bottom:20px;
+    left:-5px;
+    border-radius:8px;
+    width:200px
 }

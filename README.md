@@ -14,4 +14,9 @@ source .venv/bin/activate
 python3 -m pip install ginza
 python3 -m pip install spacy
 ```
+
+Install Japanese Dictionary (JAMDICT, using JMdict, KanjiDic2, JMnedict)
 - Only run the app.py within the virtual environment, or else ginza will not be recognized.
+```
+python3 -m pip install wheel jamdict jamdict-data
+```

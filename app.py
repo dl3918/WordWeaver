@@ -5,6 +5,7 @@ it, or not.
 """
 import random
 import json
+import numpy as np
 import string
 from flask import Flask, render_template, redirect, request, session, flash
 from sqlalchemy.sql import func
@@ -16,6 +17,8 @@ from datetime import datetime, timedelta
 import hashlib
 import hmac
 from typing import Tuple
+from jamdict import Jamdict
+jam = Jamdict()
 
 import spacy
 nlp = spacy.load("ja_ginza")
@@ -62,6 +65,16 @@ def is_correct_password(salt: bytes, pw_hash: bytes, password: str) -> bool:
         pw_hash,
         hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
     )
+
+def dictLookUp(string):
+    result = jam.lookup(string)
+    if not result.entries:
+        out = result.names
+    else:
+        out = result.entries
+    if out:
+        return out[0]
+    else: return out
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -153,32 +166,44 @@ def spanify(language, text):
     spans = []
     if (language == 'jp'):
         doc = nlp(text)
+        id = 0
         for sentence in doc.sents:
             for token in sentence:
-                spans.append(token.orth_)
+                if (token.orth_ == 'る'):
+                    spans[len(spans) - 1]['orth'] += token.orth_
+                else:
+                    spans.append({'id' : id, 'orth' : token.orth_})
+                    id += 1
     elif (language == 'cn'):
+        id = 0
         for i in text:
-            spans += i
+            spans.append({'id': id, 'orth' : i})
+            id += 1
     return spans
 
-@app.route('/read')
+@app.route('/read', methods=['GET', 'POST'])
 def read():    
-    try: 
-        username = session['user']
-        user = db.one_or_404(db.select(User).filter_by(username=username))
-        language = user.language
-    except:
-        language = session['language']
+    if (request.method == 'POST'):
+        word = request.form.get('word').replace(' ', '')
+        dictInfo = dictLookUp(word)
+        return redirect('/read', dictInfo=dictInfo)
+    else:
+        try: 
+            username = session['user']
+            user = db.one_or_404(db.select(User).filter_by(username=username))
+            language = user.language
+        except:
+            language = session['language']
+            with open('static/texts-' + language + '.json') as f:
+                data = json.load(f)
+                story = data['texts'][random.randint(0,len(data['texts']) - 1)]
+                spans = spanify(language, story['text'])
+            return render_template('language-guest.html', language=language, spans=spans)
         with open('static/texts-' + language + '.json') as f:
-            data = json.load(f)
-            story = data['texts'][random.randint(0,len(data['texts']) - 1)]
-            spans = spanify(language, story['text'])
-        return render_template('language-guest.html', language=language, spans=spans)
-    with open('static/texts-' + language + '.json') as f:
-            data = json.load(f)
-            story = data['texts'][random.randint(0,len(data['texts']) - 1)]
-            spans = spanify(language, story['text'])
-    return render_template('language.html', language=session['language'], spans=spans)
+                data = json.load(f)
+                story = data['texts'][random.randint(0,len(data['texts']) - 1)]
+                spans = spanify(language, story['text'])
+        return render_template('language.html', language=session['language'], spans=spans)
 
 @app.route('/profile')
 def profile():
