@@ -16,7 +16,7 @@
         <link href="https://fonts.googleapis.com/css2?&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
         <script src="//mandarinspot.com/static/mandarinspot.min.js" charset="UTF-8"></script>
     </head>
-    <body onload="loadText()">
+    <body>
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
@@ -84,7 +84,9 @@
                         </div>
                         <div style="flex-direction: column;">
                             <div class="left aligned column main-col" style="max-width: 800px">
-                                <div class="center-container" id="text" style="text-align: left;"></div>
+                                <div class="center-container" id="text" style="text-align: left;">
+                                    {% for span in spans %}<span style="position:relative;" onmouseover="displayText({{ span.id }})" onmouseleave="hideText({{ span.id }})" class="inline" value="{{ span.orth }}" data-tooltip="{{ span.orth }}"><div class="popup" id="{{ span.id }}"><form method="POST"><span>{{ span.orth }}</span><p></p><button value="{{ span.orth }}" name="word" class="blue" action="/read">Add To Vocab</button></form></div>{{ span.orth }}</span>{% endfor %}
+                                </div>
                             </div>
                         </div>   
                         </div>
@@ -93,6 +95,12 @@
             </div>
         </main>
         <script>
+            function displayText(id) {
+                document.getElementById(id).setAttribute('style', "display: inline-block");
+            }
+            function hideText(id) {
+                document.getElementById(id).setAttribute('style', "display: none");
+            }
             function getRandomInt(max) {
                 return Math.floor(Math.random() * max);
             }       

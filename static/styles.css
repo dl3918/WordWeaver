@@ -254,3 +254,26 @@ div.rounded {
 .centered {
     justify-content: center;
 }
+
+span.inline {
+    margin-bottom: 20px;
+    display: inline-block;
+    cursor: pointer;
+}
+
+span.inline:hover {
+    background: yellow;
+    border-radius: 8px;
+}
+
+div.popup{
+    background:beige;
+    padding:5px;
+    display: none;
+    z-index: 2;
+    position:absolute;
+    bottom:20px;
+    left:-5px;
+    border-radius:8px;
+    width:200px
+}
