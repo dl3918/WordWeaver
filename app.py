@@ -89,7 +89,7 @@ class User(db.Model):
 class Vocabulary(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     chinese_word = db.Column(db.String(100), nullable=False)
-    translation = db.Column(db.String(100), nullable=False)
+    translation = db.Column(db.String(100), server_default='')
     pronunciation = db.Column(db.String(100), server_default='')
     level = db.Column(db.String(50), nullable=False)  # Values: 'new', 'familiar', 'confident'
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -114,6 +114,7 @@ def login():
         password = request.form.get("password")
         try:
             user = db.one_or_404(db.select(User).filter_by(username=username))
+            print("user found")
         except:
             flash("Invalid Username")
             return redirect('/login')
@@ -196,7 +197,21 @@ def read():
     if (request.method == 'POST'):
         word = request.form.get('word').replace(' ', '')
         dictInfo = dictLookUp(word)
-        return redirect('/read', dictInfo=dictInfo)
+        if session['language'] == 'jp':
+            # if 'user' not in session:
+            #     return redirect('/login')
+            user_id = User.query.filter_by(username=session['user']).first().id
+
+            # Define initial vocabulary
+            vocab = {'chinese_word': dictInfo.kanji_forms, 'level': 'new', 'user_id': user_id, 'translation' : dictInfo.senses, 'pronunciation': dictInfo.kana_forms},
+
+            # Add to database if not already present
+            if not Vocabulary.query.filter_by(chinese_word=vocab['chinese_word'], user_id=user_id).first():
+                new_vocab = Vocabulary(**vocab)
+                db.session.add(new_vocab)
+            
+            db.session.commit()
+        return redirect('/read')
     else:
         try: 
             username = session['user']

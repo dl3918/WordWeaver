@@ -43,7 +43,7 @@
                         <div style="flex-direction: column;">
                             <div class="left aligned column main-col" style="max-width: 800px">
                                 <div class="center-container" id="text" style="text-align: left;">
-                                    {% for span in spans %}<span class="inline" value="{{ span }}" data-tooltip="{{ span }}">{{ span }}</span>{% endfor %}
+                                    {% for span in spans %}<span style="position:relative;" onmouseover="displayText({{ span.id }})" onmouseleave="hideText({{ span.id }})" class="inline" value="{{ span.orth }}" data-tooltip="{{ span.orth }}"><div class="popup" id="{{ span.id }}"><span>{{ span.orth }}</span><p></p></div>{{ span.orth }}</span>{% endfor %}
                                 </div>
                             </div>
                             <div>
@@ -60,6 +60,12 @@
             </div>
         </main>
         <script>
+            function displayText(id) {
+                document.getElementById(id).setAttribute('style', "display: inline-block");
+            }
+            function hideText(id) {
+                document.getElementById(id).setAttribute('style', "display: none");
+            }
             function getRandomInt(max) {
                 return Math.floor(Math.random() * max);
             }       
