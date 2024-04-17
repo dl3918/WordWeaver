@@ -245,8 +245,16 @@ def read():
             spans = spanify(language, story['text'])
             eng_spans = data['texts'][story_no]['en-text'] 
             if (session['language'] == "jp"):       
+                try:
+                    username
+                except:
+                    return render_template('language-guest.html', language=language, spans=spans)
                 return render_template('language.html', language=language, spans=spans, eng_spans=eng_spans)
             else:
+                try:
+                    username
+                except:
+                    return render_template('language-guest.html', language=language, spans=story['text'])
                 return render_template('language.html', language=language, spans=story['text'], eng_spans=eng_spans)
 
 @app.route('/profile')

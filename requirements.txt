@@ -4,3 +4,4 @@ fredapi==0.4.2
 ginza
 spacy
 openai
+ja_ginza
