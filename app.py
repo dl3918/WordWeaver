@@ -71,7 +71,6 @@ def is_correct_password(salt: bytes, pw_hash: bytes, password: str) -> bool:
 
 def dictLookUp(string):
     result = jam.lookup(string)
-    print(result.entries)
     if not result.entries:
         out = result.names
     else:
@@ -150,7 +149,6 @@ def signup():
             db.session.add(user)
             db.session.commit()
             session['user'] = username
-            print(session['user'])
             return redirect('/select+language')
         else:
             return redirect("/")
@@ -160,6 +158,7 @@ def logout():
     # remove the username from the session if it's there
     session.pop('user', None)
     session.pop('language', None)
+    session.pop('story', None)
     return redirect('/')
 
 @app.route('/select+language', methods=['GET', 'POST'])
@@ -187,7 +186,6 @@ def spanify(language, text):
         id = 0
         for sentence in doc.sents:
             for token in sentence:
-                print(token.morph.get("Inflection"))
                 if (token.orth_ in ['る', 'て', 'う', 'つ', 'す', 'む', 'ぬ', 'ぶ']):
                     spans[len(spans) - 1]['orth'] += token.orth_
                 else:
@@ -212,20 +210,23 @@ def read():
 
             # Define initial vocabulary
             vocab = []
-            print(dictInfo.kana_forms[0])
-            print(dictInfo.kanji_forms[0])
             for sense in dictInfo.senses:
                 if len(dictInfo.kanji_forms) > 0:
                     vocab.append({'chinese_word': str(dictInfo.kanji_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
                 else:
                     vocab.append({'chinese_word': str(dictInfo.kana_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
             for vocab_item in vocab:
-                # Add to database if not already present
                 if not Vocabulary.query.filter_by(chinese_word=vocab_item['chinese_word'], user_id=user_id).first():
                     new_vocab = Vocabulary(**vocab_item)
                     db.session.add(new_vocab)
                     db.session.commit()
-        return redirect('/read')
+        with open('static/texts-' + session['language'] + '.json') as f:
+            data = json.load(f)
+            story_no = session['story']
+            story = data['texts'][story_no]
+            spans = spanify(session['language'], story['text'])
+            eng_spans = data['texts'][story_no]["en-text"]
+        return render_template('language.html', language=session['language'], spans=spans, eng_spans=eng_spans)
     else:
         try: 
             username = session['user']
@@ -233,16 +234,14 @@ def read():
             language = user.language
         except:
             language = session['language']
-            with open('static/texts-' + language + '.json') as f:
-                data = json.load(f)
-                story = data['texts'][random.randint(0,len(data['texts']) - 1)]
-                spans = spanify(language, story['text'])
-            return render_template('language-guest.html', language=language, spans=spans)
         with open('static/texts-' + language + '.json') as f:
-                data = json.load(f)
-                story = data['texts'][random.randint(0,len(data['texts']) - 1)]
-                spans = spanify(language, story['text'])
-        return render_template('language.html', language=session['language'], spans=spans)
+            data = json.load(f)
+            story_no = random.randint(0, len(data['texts']) - 1)
+            session['story'] = story_no
+            story = data['texts'][story_no]
+            spans = spanify(language, story['text'])
+            eng_spans = data['texts'][story_no]['en-text']        
+        return render_template('language.html', language=language, spans=spans, eng_spans=eng_spans)
 
 @app.route('/profile')
 def profile():
@@ -254,7 +253,7 @@ def profile():
         starttime = starttime.strftime("%d %B, %Y")
     except:
         return redirect('/')
-    return render_template('profile.html', username=session['user'], language=session['language'], starttime=starttime)
+    return render_template('profile.html', username=session['user'], language=language, starttime=starttime)
 
 
 @app.route('/vocab', methods=['GET', 'POST'])
@@ -275,7 +274,6 @@ def vocab():
         vocab_list = Vocabulary.query.filter_by(user_id=user_id).all()
         vocab_dict = {'new': [], 'familiar': [], 'confident': []}
         for vocab in vocab_list:
-            print(vocab.pronunciation)
             vocab_dict[vocab.level].append({'word' : vocab.chinese_word, 'sense' : vocab.translation.split('(')[0], 'pronunciation' : vocab.pronunciation})
         return render_template('vocab.html', vocab=vocab_dict)
 
