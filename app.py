@@ -226,7 +226,7 @@ def read():
             story = data['texts'][story_no]
             spans = spanify(session['language'], story['text'])
             eng_spans = data['texts'][story_no]["en-text"]
-        if (language == "jp"): # Temporary Fix to allow for comparison between Japanese and Chinese Versions
+        if (session['language'] == "jp"): # Temporary Fix to allow for comparison between Japanese and Chinese Versions
             return render_template('language.html', language=session['language'], spans=spans, eng_spans=eng_spans)
         else:
             return render_template('language.html', language=session['language'], spans=story['text'], eng_spans=eng_spans)
@@ -244,10 +244,10 @@ def read():
             story = data['texts'][story_no]
             spans = spanify(language, story['text'])
             eng_spans = data['texts'][story_no]['en-text'] 
-        if (language == "jp"):       
-            return render_template('language.html', language=language, spans=spans, eng_spans=eng_spans)
-        else:
-            return render_template('language.html', language=language, spans=story['text'], eng_spans=eng_spans)
+            if (session['language'] == "jp"):       
+                return render_template('language.html', language=language, spans=spans, eng_spans=eng_spans)
+            else:
+                return render_template('language.html', language=language, spans=story['text'], eng_spans=eng_spans)
 
 @app.route('/profile')
 def profile():
