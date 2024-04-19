@@ -86,7 +86,8 @@
                         <div style="flex-direction: column;">
                             <div class="left aligned column main-col" style="max-width: 800px">
                                 <div class="center-container" id="text" style="text-align: left;">
-                                    <span style="position:relative;">{{ spans }}</span>
+                                    <span id="mySpan" style="position:relative;">{{ spans }}</span>
+
                                 </div>
                             </div>
                         </div>
@@ -114,6 +115,15 @@
             </div>
         </main>
         <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var spanContent = document.getElementById('mySpan').innerHTML;
+                // console.log(spanContent);  for checking output
+                if (mandarinspot && spanContent) {
+                    mandarinspot.annotate(spanContent.text);
+                } else {
+                    console.error('Annotation library or container not available.');
+                }
+            });
             function displayText(id) {
                 document.getElementById(id).setAttribute('style', "display: inline-block");
             }
