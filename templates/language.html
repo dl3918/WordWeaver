@@ -15,6 +15,8 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
         <script src="//mandarinspot.com/static/mandarinspot.min.js" charset="UTF-8"></script>
+        <script src="//mandarinspot.com/static/mandarinspot.min.js" charset="UTF-8"></script>
+        <script>mandarinspot.annotate();</script>
     </head>
     <body>
         <!--[if lt IE 7]>
@@ -41,13 +43,13 @@
                                     </button>
                                 </form>
                             </div>
-                            <div class="sidebar-item" >
+                            <!-- <div class="sidebar-item" >
                                 <form action="/read" style="width:100%">
                                     <button class="white long smallcaps-text" style="width:100%; color:black; border:0px">
                                         write
                                     </button>
                                 </form>
-                            </div>
+                            </div> -->
                             <div class="sidebar-item" >
                                 <form action="/vocab" style="width:100%">
                                     <button class="white long smallcaps-text" style="width:100%; color:black; border:0px">
@@ -96,7 +98,7 @@
                             <div style="flex-direction: column;">
                                 <div class="left aligned column main-col" style="max-width: 800px">
                                     <div class="center-container" id="text" style="text-align: left;">
-                                        {% for span in spans %}<span style="position:relative;" onmouseover="displayText({{ span.id }})" onmouseleave="hideText({{ span.id }})" class="inline" value="{{ span.lemma }}" data-tooltip="{{ span.orth }}"><div class="popup" id="{{ span.id }}"><form method="POST"><span>{{ span.lemma }}</span><p></p><button onclick="flash()" value="{{ span.lemma }}" name="word" class="blue" action="/read">I don't know this</button></form></div>{{ span.orth }}</span>{% endfor %}
+                                        {% for span in spans %}<span style="position:relative;" onclick="alert('Word added to Vocabulary!')" onmouseover="displayText({{ span.id }})" onmouseleave="hideText({{ span.id }})" class="inline" value="{{ span.lemma }}" data-tooltip="{{ span.orth }}"><div class="popup" id="{{ span.id }}"><form method="POST"><span>{{ span.lemma }}</span><p></p><button onclick="flash()" value="{{ span.lemma }}" name="word" class="blue" action="/read">I don't know this</button></form></div>{{ span.orth }}</span>{% endfor %}
                                     </div>
                                 </div>
                             </div>
