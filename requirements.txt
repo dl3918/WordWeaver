@@ -5,3 +5,7 @@ ginza
 spacy
 openai
 ja_ginza
+wheel 
+jamdict 
+jamdict-data
+numpy

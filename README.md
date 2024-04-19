@@ -12,6 +12,11 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
+- make sure pip is up to date
+```
+pip install --upgrade pip
+```
+
 - Install required dependency, e.g., Ginza, spacy, flask, flask_sqlalchemy
 
 ```
