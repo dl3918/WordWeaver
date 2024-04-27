@@ -41,6 +41,16 @@
                                     </div>
                                 </div>
                         </div>
+                        {% if language == "cn" %}
+                        <div style="flex-direction: column;">
+                            <div class="left aligned column main-col" style="max-width: 800px">
+                                <div class="center-container" id="text" style="text-align: left;">
+                                    <span id="mySpan" style="position:relative;">{{ spans }}</span>
+
+                                </div>
+                            </div>
+                        </div>
+                        {% elif language == "jp" %}
                         <div style="flex-direction: column;">
                             <div class="left aligned column main-col" style="max-width: 800px">
                                 <div class="center-container" id="text" style="text-align: left;">
@@ -55,12 +65,25 @@
                                 </form>
                             </div>
                         </div>   
+                        {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
         </main>
         <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var spanContent = document.getElementById('mySpan').innerHTML;
+                // console.log(spanContent);  for checking output
+                if (mandarinspot && spanContent) {
+                    mandarinspot.annotate(spanContent.text);
+                } else {
+                    console.error('Annotation library or container not available.');
+                }
+                setTimeout(() => {
+                    enhanceAnnotations();
+                }, 1000);
+            });
             function displayText(id) {
                 document.getElementById(id).setAttribute('style', "display: inline-block");
             }
@@ -70,35 +93,6 @@
             function getRandomInt(max) {
                 return Math.floor(Math.random() * max);
             }       
-            function loadText() {
-                var language = document.getElementById("language").value;
-                console.log(language);
-                fetch ("../static/texts-" + language + ".json")
-                     .then((res) => {
-                        if (!res.ok) {
-                            throw new Error 
-                                (`HTTP error! Status: $(res.status)`);
-                        }
-                        return res.json();
-                     })
-                     .then((data) =>{
-                        var index = getRandomInt(data.texts.length);
-                        var span = "";
-                        if (data.texts[index].author == "") { span = "No Author Attributable"; }
-                        else { span = data.texts[index].author }
-                        var container = document.getElementById('text');
-                        container.innerHTML = `<p>${data.texts[index].text}</p><span>${span}</span>`;
-                        if (language === 'cn') {
-                            mandarinspot.annotate(container);
-                            mandarinspot.showPopups(true);
-                            //mandarinspot.showInline("visible")
-                        } else if (language === 'jp') {
-                            pass;
-                        }
-                        return 0;
-                     })
-                     .catch((error) => console.error("Unable to fetch data:", error));
-            }
         </script>
         <script>
             function home() {
