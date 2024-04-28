@@ -368,7 +368,7 @@ def generate_story(prompt):
         return redirect('/login')
 
     try:
-        client = OpenAI(api_key="sk-proj-30MMhcLrz3wzhMP7ZnBlT3BlbkFJ2KQftAU8veyoYKomCTPl")  # Replace with your actual API key
+        # client = OpenAI(api_key="")  # Replace with your actual API key
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
