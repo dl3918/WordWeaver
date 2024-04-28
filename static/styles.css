@@ -328,3 +328,18 @@ div.popup{
     border-radius: 5px;
     cursor: pointer;
 }
+
+.generate-button {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 16px;
+    padding: 10px 20px;
+    background-color: #3066be;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.generate-button:hover {
+    background-color: #204a8c;
+}
