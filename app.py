@@ -203,9 +203,31 @@ def read():
     if 'user' not in session:
         return redirect('/login')
 
+    user_id = User.query.filter_by(username=session['user']).first().id
+
     if request.method == 'POST':
-        generate_new_story = request.form.get('generate', False)
-        if generate_new_story:
+        if 'word' in request.form:
+            word = request.form['word'].strip()
+            if word:
+                dictInfo = dictLookUp(word)
+
+                # Define initial vocabulary
+                vocab = []
+                for sense in dictInfo.senses:
+                    if len(dictInfo.kanji_forms) > 0:
+                        vocab.append({'chinese_word': str(dictInfo.kanji_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
+                    else:
+                        vocab.append({'chinese_word': str(dictInfo.kana_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
+                for vocab_item in vocab:
+                    if not Vocabulary.query.filter_by(chinese_word=vocab_item['chinese_word'], user_id=user_id).first():
+                        new_vocab = Vocabulary(**vocab_item)
+                        db.session.add(new_vocab)
+                        db.session.commit()
+                        return jsonify({'success': True, 'message': 'Word added successfully'})
+
+
+        # generate_new_story = request.form.get('generate', False)
+        if 'generate' in request.form and request.form['generate'] == 'true':
             selected_words = session.get('selected_words', [])
             paragraph_type = session.get('paragraph_type', 'story')
 
@@ -217,13 +239,9 @@ def read():
             story, translated_story = generate_story(prompt)  # Assuming generate_story returns a tuple
             span = spanify(session['language'], story)
             return render_template('language.html', language=session['language'], spans=span, eng_spans=translated_story)
-        else:
-            # Reload the page without generating new content, perhaps showing an error or status message
-            flash('Click "Generate Story" to create new content based on your selection.', 'info-generate')
-            return render_template('language.html')
-    else:
-        # Initial page load scenario, render the page normally
-        return render_template('language.html')
+
+    # If not POST or no specific action taken, show the language page normally
+    return render_template('language.html')
 
 # @app.route('/read', methods=['GET', 'POST'])
 # def read():    

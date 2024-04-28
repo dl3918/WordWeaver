@@ -82,12 +82,18 @@
                                     </div>
                                 </div>
                         </div>
+                        <div class="preamble-section" style="margin: 20px; padding: 20px; background-color: #f4f4f8; border-left: 5px solid #3066be;">
+                            <h2>Welcome to Our AI-Powered Story Generator</h2>
+                            <p>Our tool leverages OpenAI's advanced AI to craft unique stories based on your input. We use sophisticated machine learning models to transform selected words and styles into engaging narratives.</p>
+                            <p><strong>Please Note:</strong> AI-generated content may occasionally include unexpected results or inaccuracies. We recommend reviewing any stories with consideration for these potential limitations.</p>
+                            <p>Enjoy the innovative experience of AI-driven creativity!</p>
+                        </div>
                         {% if language == "cn" %}
                         <div style="flex-direction: column;">
                             <div class="left aligned column main-col" style="max-width: 800px">
                                 <div class="center-container" id="text" style="text-align: left;">
+                                    console.log('chinese');
                                     <span id="mySpan" style="position:relative;">{{ spans }}</span>
-
                                 </div>
                             </div>
                         </div>
@@ -96,7 +102,9 @@
                             <div style="flex-direction: column;">
                                 <div class="left aligned column main-col" style="max-width: 800px">
                                     <div class="center-container" id="text" style="text-align: left;">
-                                        {% for span in spans %}<span style="position:relative;" onmouseover="displayText({{ span.id }})" onmouseleave="hideText({{ span.id }})" class="inline" value="{{ span.lemma }}" data-tooltip="{{ span.orth }}"><div class="popup" id="{{ span.id }}"><form method="POST"><span>{{ span.lemma }}</span><p></p><button onclick="flash()" value="{{ span.lemma }}" name="word" class="blue" action="/read">Add to Vocab</button></form></div>{{ span.orth }}</span>{% endfor %}
+                                        {% for span in spans %}<span style="position:relative;" onmouseover="displayText({{ span.id }})" onmouseleave="hideText({{ span.id }})" class="inline" value="{{ span.lemma }}" data-tooltip="{{ span.orth }}"><div class="popup" id="{{ span.id }}"><form method="POST"><span>{{ span.lemma }}</span><p></p>
+                                            <button type="button" class="add-to-vocab-button" data-word="{{ span.lemma }}">Add to Vocab</button>
+                                        </form></div>{{ span.orth }}</span>{% endfor %}
                                     </div>
                                 </div>
                             </div>
@@ -125,31 +133,57 @@
             </div>
         </main>
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                var spanContent = document.getElementById('mySpan').innerHTML;
-                // console.log(spanContent);  for checking output
-                if (mandarinspot && spanContent) {
-                    mandarinspot.annotate(spanContent.text);
-                } else {
-                    console.error('Annotation library or container not available.');
-                }
-                setTimeout(() => {
-                    enhanceAnnotations();
-                }, 1000);
-            });
-            function enhanceAnnotations() {
-                // Assuming the API wraps annotations in <span class="annotation"> tags
-                var annotations = document.querySelectorAll('#mySpan .annotation');
-                console.log(annotations);
-                annotations.forEach(function(annotation) {
-                    var button = document.createElement('button');
-                    button.textContent = "I don't know this";
-                    button.onclick = function() {
-                        addToVocab(annotation.textContent); // Implement this function to handle adding to vocab
-                    };
-                    annotation.appendChild(button);
+            function addWordToVocab(word) {
+                fetch('/read', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'word=' + encodeURIComponent(word)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);  // Or update a status message on your page
+                    } else {
+                        alert('Failed to add the word');
+                    }
+                })
+                .catch(error => console.error('Error adding word:', error));
+            }
+
+            document.querySelectorAll('.add-to-vocab-button').forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    addWordToVocab(this.getAttribute('data-word'));
                 });
-}
+            });
+            // document.addEventListener('DOMContentLoaded', function() {
+            //     var spanContent = document.getElementById('mySpan').innerHTML;
+            //     // console.log(spanContent);  for checking output
+            //     if (mandarinspot && spanContent) {
+            //         mandarinspot.annotate(spanContent.text);
+            //     } else {
+            //         console.error('Annotation library or container not available.');
+            //     }
+            //     // setTimeout(() => {
+            //     //     enhanceAnnotations();
+            //     // }, 1000);
+            // });
+//             function enhanceAnnotations() {
+//                 // Assuming the API wraps annotations in <span class="annotation"> tags
+//                 var annotations = document.querySelectorAll('#mySpan .annotation');
+//                 console.log(annotations);
+//                 annotations.forEach(function(annotation) {
+//                     var button = document.createElement('button');
+//                     button.textContent = "I don't know this";
+//                     button.onclick = function() {
+//                         addToVocab(annotation.textContent); // Implement this function to handle adding to vocab
+//                     };
+//                     annotation.appendChild(button);
+//                 });
+// }
+
             function displayText(id) {
                 document.getElementById(id).setAttribute('style', "display: inline-block");
             }
