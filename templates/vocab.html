@@ -58,17 +58,39 @@
                         <div class="center-container" id="text" style="text-align: left;">
                             <h1 class="huge">Your Vocabulary List</h1>
                             <form action="/vocab" method="POST">
-                            {% for level, words in vocab.items() %}
-                                <h2>{{ level.capitalize() }}</h2>
-                                <ul>
-                                {% for word in words %}
-                                    <li><span style="font-weight: 600;font-size: 26px;">{{ word.word }}</span>{% if word.pronunciation != "" %}<span>&nbsp;[{{ word.pronunciation}}]</span>{% endif %}&nbsp;<button value="{{ word.word }}" name="delete" style="margin-bottom:5px" class="white">—</button>
-                                        <p>{{ word.sense }}</p>
-                                    </li>
+                                {% for level, words in vocab.items() %}
+                                    <h2>{{ level.capitalize() }}</h2>
+                                    <ul>
+                                        {% for word in words %}
+                                            <li>
+                                                <input type="checkbox" name="selected_words" value="{{ word.word }}" id="{{ word.word }}">
+                                                <label for="{{ word.word }}">{{ word.word }}</label>
+                                                {% if word.pronunciation != "" %}
+                                                    <span>[{{ word.pronunciation }}]</span>
+                                                    <button type="submit" name="delete" value="{{ word.word }}">Delete</button>
+                                                {% endif %}
+                                                <p>{{ word.sense }}</p>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
                                 {% endfor %}
-                                </ul>
-                            {% endfor %}
-                        </form>
+                                <select name="action">
+                                    <option value="generate_story">Generate Story</option>
+                                    <!-- other actions can be added here -->
+                                </select>
+                                <button type="submit" name="submit_action" value="execute_action">Submit</button>
+                            </form>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui" style="width:100%; overflow: scroll; max-height: 100vh; display: inline-block;">
+                <div style="flex-direction: column;">
+                    <div class="left aligned column main-col" style="max-width: 800px; margin-top: 150px;">
+                        <div class="center-container" id="text" style="text-align: left;">
+                            <h1 class="huge">Let's practice by exploring new stories that include these words!</h1>
                         </div>
                     </div>
                 </div>

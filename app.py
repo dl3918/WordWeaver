@@ -270,25 +270,59 @@ def profile():
     return render_template('profile.html', username=session['user'], language=language, starttime=starttime)
 
 
+# @app.route('/vocab', methods=['GET', 'POST'])
+# def vocab():
+#     if (request.method == "POST"):
+#         if request.form.get('delete'):
+#             delete = request.form.get('delete')
+#             user = User.query.filter_by(username=session['user']).first()
+#             Vocabulary.query.filter_by(user_id=user.id, chinese_word=delete).delete()
+#             db.session.commit()
+#             return redirect('/vocab')
+#         else:
+#             return redirect('/vocab')
+#     else:
+#         if 'user' not in session:
+#             return redirect('/login')
+#         user_id = User.query.filter_by(username=session['user']).first().id
+#         vocab_list = Vocabulary.query.filter_by(user_id=user_id).all()
+#         vocab_dict = {'new': [], 'familiar': [], 'confident': []}
+#         for vocab in vocab_list:
+#             vocab_dict[vocab.level].append({'word' : vocab.chinese_word, 'sense' : vocab.translation.split('(')[0], 'pronunciation' : vocab.pronunciation})
+#         return render_template('vocab.html', vocab=vocab_dict)
 @app.route('/vocab', methods=['GET', 'POST'])
 def vocab():
-    if (request.method == "POST"):
+    if 'user' not in session:
+        return redirect('/login')
+
+    user_id = User.query.filter_by(username=session['user']).first().id
+
+    if request.method == 'POST':
         if request.form.get('delete'):
-            delete = request.form.get('delete')
-            user = User.query.filter_by(username=session['user']).first()
-            Vocabulary.query.filter_by(user_id=user.id, chinese_word=delete).delete()
+            # Handle deletion
+            delete_word = request.form.get('delete')
+            Vocabulary.query.filter_by(user_id=user_id, chinese_word=delete_word).delete()
             db.session.commit()
             return redirect('/vocab')
-        else:
-            return redirect('/vocab')
+        elif request.form.get('submit_action') == 'execute_action' and request.form.get('action') == 'generate_story':
+            # Handle story generation
+            selected_words = request.form.getlist('selected_words')
+            if not selected_words:
+                return "Please select at least one word.", 400
+            prompt = f"Create a story of less than 100 words in Japanese including these words:: {', '.join(selected_words)}"
+            story, translated_story = generate_story(prompt)  # Assuming generate_story is a function that returns a string
+            span = spanify(session['language'], story)
+            if story:
+                return render_template('language.html', language=session['language'], spans=span, eng_spans=translated_story)
+            else:
+                return "Failed to generate story due to a network error", 500
+
     else:
-        if 'user' not in session:
-            return redirect('/login')
-        user_id = User.query.filter_by(username=session['user']).first().id
+        # GET method for displaying vocab
         vocab_list = Vocabulary.query.filter_by(user_id=user_id).all()
         vocab_dict = {'new': [], 'familiar': [], 'confident': []}
         for vocab in vocab_list:
-            vocab_dict[vocab.level].append({'word' : vocab.chinese_word, 'sense' : vocab.translation.split('(')[0], 'pronunciation' : vocab.pronunciation})
+            vocab_dict[vocab.level].append({'word': vocab.chinese_word, 'sense': vocab.translation.split('(')[0], 'pronunciation': vocab.pronunciation})
         return render_template('vocab.html', vocab=vocab_dict)
 
 
@@ -325,45 +359,80 @@ import requests  # Import the requests library
 import json
 import logging
 from openai import OpenAI
+from flask import request, jsonify, session, redirect
 
-@app.route('/generate-story', methods=['GET'])
-def generate_story():
+
+@app.route('/generate-story', methods=['POST'])
+def generate_story(prompt):
     if 'user' not in session:
         return redirect('/login')
 
-    level = request.args.get('level', default='new')
-    num_words = int(request.args.get('num_words', default=2))
-
-    user_id = User.query.filter_by(username=session['user']).first().id
-    vocab_list = Vocabulary.query.filter_by(user_id=user_id, level=level).all()
-
-    if len(vocab_list) < num_words:
-        return "Not enough words in the selected level", 400
-
-
-    selected_words = random.sample([vocab.chinese_word for vocab in vocab_list], num_words)
-    prompt = f"请用中文写一段大概100个词的段落，包含以下词汇: {', '.join(selected_words)}."
-
-    client = OpenAI(api_key="removed for security reason")
-
-    # Create the chat messages structure for OpenAI API
-    message = [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": prompt}
-    ]
-
     try:
+        client = OpenAI(api_key="sk-proj-30MMhcLrz3wzhMP7ZnBlT3BlbkFJ2KQftAU8veyoYKomCTPl")  # Replace with your actual API key
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=message
-            )
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ]
+        )
         story = completion.choices[0].message.content
-        return jsonify({"story": story}), 200
+
+        translation_prompt = f"Translate the following story to English: {story}"
+        translation_completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": translation_prompt}
+            ]
+        )
+        translated_story = translation_completion.choices[0].message.content
+        # jsonify({"story": story}), 200
+        return story, translated_story
     except Exception as e:
         logging.error(f"OpenAI request failed: {e}")
         return "Failed to generate story due to a network error."
 
     return "An unexpected error occurred."
+
+# @app.route('/generate-story', methods=['GET'])
+# def generate_story():
+#     if 'user' not in session:
+#         return redirect('/login')
+
+#     level = request.args.get('level', default='new')
+#     num_words = int(request.args.get('num_words', default=2))
+
+#     user_id = User.query.filter_by(username=session['user']).first().id
+#     vocab_list = Vocabulary.query.filter_by(user_id=user_id, level=level).all()
+
+#     if len(vocab_list) < num_words:
+#         return "Not enough words in the selected level", 400
+
+
+#     selected_words = random.sample([vocab.chinese_word for vocab in vocab_list], num_words)
+#     prompt = f"请用中文写一段大概100个词的段落，包含以下词汇: {', '.join(selected_words)}."
+
+#     client = OpenAI(api_key="removed for security reason")
+
+#     # Create the chat messages structure for OpenAI API
+#     message = [
+#         {"role": "system", "content": "You are a helpful assistant."},
+#         {"role": "user", "content": prompt}
+#     ]
+
+#     try:
+#         completion = client.chat.completions.create(
+#             model="gpt-3.5-turbo",
+#             messages=message
+#             )
+#         story = completion.choices[0].message.content
+#         return jsonify({"story": story}), 200
+#     except Exception as e:
+#         logging.error(f"OpenAI request failed: {e}")
+#         return "Failed to generate story due to a network error."
+
+#     return "An unexpected error occurred."
 
 
 if __name__ == '__main__':
