@@ -72,13 +72,19 @@
                                         {% endfor %}
                                     </ul>
                                 {% endfor %}
-                                <select name="action">
-                                    <option value="generate_story">Generate Story</option>
-                                    <option value="generate_email">Generate Email</option>
-                                    <option value="generate_newspaper">Generate Newspaper</option>
-                                    <!-- other actions can be added here -->
-                                </select>
-                                <button type="submit" name="submit_action" value="execute_action">Submit</button>
+                                
+                                <div class="practice-section">
+
+                                    <h1 class="huge">Let's practice by exploring new stories that include these words! </h1>
+                                    <h1 class="huge">Check the box to select a word</h1>
+                                    <select name="action" class="dropdown-style">
+                                        <option value="generate_story">Generate Story</option>
+                                        <option value="generate_email">Generate Email</option>
+                                        <option value="generate_newspaper">Generate Newspaper</option>
+                                        <!-- other actions can be added here -->
+                                    </select>
+                                    <button type="submit" name="submit_action" value="execute_action">Submit</button>
+                                </div>
                             </form>
                             
                         </div>
@@ -86,7 +92,7 @@
                 </div>
             </div>
 
-            <div class="ui" style="width:100%; overflow: scroll; max-height: 100vh; display: inline-block;">
+            <!-- <div class="ui" style="width:100%; overflow: scroll; max-height: 100vh; display: inline-block;">
                 <div style="flex-direction: column;">
                     <div class="left aligned column main-col" style="max-width: 800px; margin-top: 150px;">
                         <div class="center-container" id="text" style="text-align: left;">
@@ -95,7 +101,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </body>
