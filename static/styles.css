@@ -277,3 +277,8 @@ div.popup{
     border-radius:8px;
     width:150px
 }
+
+.tab {
+    display: inline-block;
+    margin-left: 4em;
+}

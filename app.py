@@ -304,12 +304,25 @@ def vocab():
             Vocabulary.query.filter_by(user_id=user_id, chinese_word=delete_word).delete()
             db.session.commit()
             return redirect('/vocab')
-        elif request.form.get('submit_action') == 'execute_action' and request.form.get('action') == 'generate_story':
+        elif request.form.get('submit_action') == 'execute_action':
             # Handle story generation
             selected_words = request.form.getlist('selected_words')
+            paragraph_type = request.form.get('action') 
+            if paragraph_type == 'generate_story':
+                selected_type = 'story'
+            elif paragraph_type == 'generate_email':
+                selected_type = 'email'
+            else:
+                selected_type = 'newspaper style'
             if not selected_words:
                 return "Please select at least one word.", 400
-            prompt = f"Create a story of less than 100 words in Japanese including these words:: {', '.join(selected_words)}"
+
+            # Construct the prompt based on selected words and type.
+            if selected_words:
+                prompt = f"Create a {selected_type} of less than 100 words in Japanese including these words: {', '.join(selected_words)}."
+            else:
+                prompt = f"Generate a random {selected_type} of less than 100 words in Japanese."
+
             story, translated_story = generate_story(prompt)  # Assuming generate_story is a function that returns a string
             span = spanify(session['language'], story)
             if story:
@@ -368,7 +381,7 @@ def generate_story(prompt):
         return redirect('/login')
 
     try:
-        # client = OpenAI(api_key="")  # Replace with your actual API key
+        # client = OpenAI(api_key="")  # Replace with actual API key
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
