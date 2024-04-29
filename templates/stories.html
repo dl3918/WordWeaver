@@ -63,11 +63,20 @@
                             <h1 class="huge">Your Saved Stories (Select to load a story if you want to save new vocabulary words!)</h1>
                         </div> 
                     </div>
-                    <form action="/read" method="POST">
+                    <form action="/stories" method="POST">
                         {% for story in stories %}
-                            <div class="left aligned column main-col" style="max-width: 800px; margin-top: 20px;">
-                                <div class="center-container" style="text-align: left;">
-                                        <span>{{ story }}</span>
+                            <div style="display: flex;flex-direction: row;height: fit-content;">
+                                <div class="left aligned column main-col" style="max-width: 700px; margin-top: 20px;margin-right:0px">
+                                    <div class="center-container" style="text-align: left;">
+                                            <span>{{ story.story }}</span>
+                                    </div>
+                                </div>
+                                <div class="left aligned column main-col" style="max-width: 100px; margin-top: 20px;margin-left: 0px; height: 100%;">
+                                    <div class="center-container" style="text-align: left; display: flex; flex-direction: column;">
+                                        <button type="submit" name="delete" value="{{ story.id }}" style="margin-bottom:10px;">Delete</button>
+                                        <br>
+                                        <button type="submit" name="load" value="{{ story.id }}">Load</button>
+                                    </div>
                                 </div>
                             </div>
                         {% endfor %}

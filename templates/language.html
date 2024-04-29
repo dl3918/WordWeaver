@@ -102,7 +102,15 @@
                             <div style="flex-direction: column;">
                                 <div class="left aligned column main-col" style="max-width: 800px">
                                     <div class="center-container" id="text" style="text-align: left;">
-                                        {% for span in spans %}<span style="position:relative;" onmouseover="displayText({{ span.id }})" onmouseleave="hideText({{ span.id }})" class="inline" value="{{ span.lemma }}" data-tooltip="{{ span.orth }}"><div class="popup" id="{{ span.id }}"><form method="POST"><span>{{ span.lemma }}</span><p></p>
+                                        {% for span in spans %}<span style="position:relative;" onmouseover="displayText({{ span.id }})" onmouseleave="hideText({{ span.id }})" class="inline" value="{{ span.lemma }}" data-tooltip="{{ span.orth }}">
+                                            <div class="popup" id="{{ span.id }}"><form method="POST"><span>{{ span.lemma }}</span>
+                                                {% for sense in span.sense %}
+                                                    {% if loop.index <= 5 %}
+                                                        <p style="font-size:small">
+                                                            <span>{{loop.index}}. {{ sense }}</span>
+                                                        </p>
+                                                    {% endif %}
+                                                {% endfor %}
                                             <button type="button" class="add-to-vocab-button" data-word="{{ span.lemma }}">Add to Vocab</button>
                                         </form></div>{{ span.orth }}</span>{% endfor %}
                                     </div>
@@ -112,7 +120,7 @@
                                 <div class="left aligned column main-col" style="max-width: 800px">
                                     <div class="center-container" id="text" style="text-align: left;">
                                         <form action="/save" method="POST">
-                                            <div class="center-container" style="flex-direction: row;">
+                                            <div class="center-container" style="display: grid;">
                                                 <input type="hidden" value="{{ story }}" id="save-story" name="save-story">
                                                 <span>Liked this story? Save it to read later!</span>
                                                 <button value="{{ story }}" class="submit-button save-story-button">Save Story</button>
