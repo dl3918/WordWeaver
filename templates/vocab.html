@@ -60,6 +60,17 @@
                 <div style="flex-direction: column;">
                     <div class="left aligned column main-col" style="max-width: 800px; margin-top: 150px;">
                         <div class="center-container" id="text" style="text-align: left;">
+                            <!-- Display flash alert -->
+                            {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% for category, message in messages %}
+                                {% if category == 'info-selection' %}  <!-- Only display messages with the 'info-selection' category -->
+                                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endwith %}
                             <h1 class="huge">Your Vocabulary List (Check the box to select a word)</h1>
                             <div class="preamble-section" style="margin: 20px; padding: 20px; background-color: #f4f4f8; border-left: 5px solid #3066be;">
                                 <h2>What do these levels mean?</h2>
@@ -110,17 +121,7 @@
                             </form>
                             
                         </div> 
-                        <!-- Display flash alert -->
-                        {% with messages = get_flashed_messages(with_categories=true) %}
-                            {% for category, message in messages %}
-                                {% if category == 'info-selection' %}  <!-- Only display messages with the 'info-selection' category -->
-                                    <div class="alert alert-info alert-dismissible fade show" role="alert">
-                                        {{ message }}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                        {% endwith %}
+                        
                     </div>
                 </div>
             </div>
