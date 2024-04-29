@@ -45,16 +45,9 @@
                         <div style="flex-direction: column;">
                             <div class="left aligned column main-col" style="max-width: 800px">
                                 <div class="center-container" id="text" style="text-align: left;">
-                                    <span id="mySpan" style="position:relative;">{{ spans }}</span>
-
-                                </div>
-                            </div>
-                        </div>
-                        {% elif language == "jp" %}
-                        <div style="flex-direction: column;">
-                            <div class="left aligned column main-col" style="max-width: 800px">
-                                <div class="center-container" id="text" style="text-align: left;">
-                                    {% for span in spans %}<span style="position:relative;" onmouseover="displayText({{ span.id }})" onmouseleave="hideText({{ span.id }})" class="inline" value="{{ span.orth }}" data-tooltip="{{ span.orth }}"><div class="popup" id="{{ span.id }}"><span>{{ span.orth }}</span><p></p></div>{{ span.orth }}</span>{% endfor %}
+                                    {% for span in spans%}
+                                        <span id="mySpan" style="position:relative;">{{ span.orth }}</span>
+                                    {% endfor %}
                                 </div>
                             </div>
                             <div>
@@ -62,6 +55,35 @@
                                     <button class="white long smallcaps-text" style="width:fit-content; color:black; border:0px">
                                         return home
                                     </button>
+                                </form>
+                                <form action="/read" method="POST" style="display: flex; justify-content: center;">
+                                    <button type="submit" name="generate" value="true" class="generate-button white long smallcaps-text">Generate New Story</button>
+                                </form>
+                            </div>
+                        </div>
+                        {% elif language == "jp" %}
+                        <div style="flex-direction: column;">
+                            <div class="left aligned column main-col" style="max-width: 800px">
+                                <div class="center-container" id="text" style="text-align: left;">
+                                    {% for span in spans %}<span style="position:relative;" onmouseover="displayText({{ span.id }})" onmouseleave="hideText({{ span.id }})" class="inline" value="{{ span.orth }}" data-tooltip="{{ span.orth }}"><div class="popup" id="{{ span.id }}"><span>{{ span.orth }}</span>
+                                        {% for sense in span.sense %}
+                                            {% if loop.index <= 5 %}
+                                                <p style="font-size:small">
+                                                    <span>{{loop.index}}. {{ sense }}</span>
+                                                </p>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>{{ span.orth }}</span>{% endfor %}
+                                </div>
+                            </div>
+                            <div>
+                                <form action="/logout" style="width:100%; display:flex; justify-content: center;">
+                                    <button class="white long smallcaps-text" style="width:fit-content; color:black; border:0px">
+                                        return home
+                                    </button>
+                                </form>
+                                <form action="/read" method="POST" style="display: flex; justify-content: center;">
+                                    <button type="submit" name="generate" value="true" class="generate-button white long smallcaps-text">Generate New Story</button>
                                 </form>
                             </div>
                         </div>   

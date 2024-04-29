@@ -92,8 +92,22 @@
                         <div style="flex-direction: column;">
                             <div class="left aligned column main-col" style="max-width: 800px">
                                 <div class="center-container" id="text" style="text-align: left;">
-                                    console.log('chinese');
-                                    <span id="mySpan" style="position:relative;">{{ spans }}</span>
+                                    {%for span in spans%}
+                                        <span id="mySpan" style="position:relative;">{{ span.orth }}</span>
+                                    {% endfor%}
+                                </div>
+                            </div>
+                            <div style="flex-direction: column;">
+                                <div class="left aligned column main-col" style="max-width: 800px">
+                                    <div class="center-container" id="text" style="text-align: left;">
+                                        <form action="/save" method="POST">
+                                            <div class="center-container" style="display: grid;">
+                                                <input type="hidden" value="{{ story }}" id="save-story" name="save-story">
+                                                <span>Liked this story? Save it to read later!</span>
+                                                <button value="{{ story }}" class="submit-button save-story-button">Save Story</button>
+                                            </div>
+                                        </form>                                    
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -196,18 +210,18 @@
                     saveStory(this.getAttribute('value'));
                 });
             });
-            // document.addEventListener('DOMContentLoaded', function() {
-            //     var spanContent = document.getElementById('mySpan').innerHTML;
-            //     // console.log(spanContent);  for checking output
-            //     if (mandarinspot && spanContent) {
-            //         mandarinspot.annotate(spanContent.text);
-            //     } else {
-            //         console.error('Annotation library or container not available.');
-            //     }
-            //     // setTimeout(() => {
-            //     //     enhanceAnnotations();
-            //     // }, 1000);
-            // });
+            document.addEventListener('DOMContentLoaded', function() {
+                var spanContent = document.getElementById('mySpan').innerHTML;
+                // console.log(spanContent);  for checking output
+                if (mandarinspot && spanContent) {
+                    mandarinspot.annotate(spanContent.text);
+                } else {
+                    console.error('Annotation library or container not available.');
+                }
+                // setTimeout(() => {
+                //     enhanceAnnotations();
+                // }, 1000);
+            });
 //             function enhanceAnnotations() {
 //                 // Assuming the API wraps annotations in <span class="annotation"> tags
 //                 var annotations = document.querySelectorAll('#mySpan .annotation');
