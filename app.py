@@ -89,6 +89,7 @@ class User(db.Model):
     language = db.Column(db.String(255), nullable=False, server_default='cn')
     salt = db.Column(db.LargeBinary(255), nullable=False, server_default='')
     vocabularies = db.relationship('Vocabulary', back_populates='user', lazy='dynamic') # include a back reference
+    stories = db.relationship('Story', back_populates='user')
 
 
 class Vocabulary(db.Model):
@@ -100,6 +101,12 @@ class Vocabulary(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     user = db.relationship('User', back_populates='vocabularies')
+
+class Story(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    story = db.Column(db.String(255), nullable=False, unique=True)
+    user = db.relationship('User', back_populates='stories')
 
 with app.app_context():
         db.create_all()
@@ -147,8 +154,8 @@ def signup():
             salt, hash = hash_new_password(password)
             user = User(username=username, password=hash, email=email, salt=salt)
             db.session.add(user)
-            db.session.commit()
             session['user'] = username
+            db.session.commit()
             return redirect('/select+language')
         else:
             return redirect("/")
@@ -199,63 +206,149 @@ def spanify(language, text):
     return spans
 
 @app.route('/read', methods=['GET', 'POST'])
-def read():    
-    if (request.method == 'POST'):
-        word = request.form.get('word').replace(' ', '')
-        dictInfo = dictLookUp(word)
-        if session['language'] == 'jp':
-            # if 'user' not in session:
-            #     return redirect('/login')
-            user_id = User.query.filter_by(username=session['user']).first().id
+def read():
+    if 'user' not in session:
+        return redirect('/login')
 
-            # Define initial vocabulary
-            vocab = []
-            for sense in dictInfo.senses:
-                if len(dictInfo.kanji_forms) > 0:
-                    vocab.append({'chinese_word': str(dictInfo.kanji_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
-                else:
-                    vocab.append({'chinese_word': str(dictInfo.kana_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
-            for vocab_item in vocab:
-                if not Vocabulary.query.filter_by(chinese_word=vocab_item['chinese_word'], user_id=user_id).first():
-                    new_vocab = Vocabulary(**vocab_item)
-                    db.session.add(new_vocab)
-                    db.session.commit()
-        with open('static/texts-' + session['language'] + '.json') as f:
-            data = json.load(f)
-            story_no = session['story']
-            story = data['texts'][story_no]
-            spans = spanify(session['language'], story['text'])
-            eng_spans = data['texts'][story_no]["en-text"]
-        if (session['language'] == "jp"): # Temporary Fix to allow for comparison between Japanese and Chinese Versions
-            return render_template('language.html', language=session['language'], spans=spans, eng_spans=eng_spans)
-        else:
-            return render_template('language.html', language=session['language'], spans=story['text'], eng_spans=eng_spans)
-    else:
-        try: 
-            username = session['user']
-            user = db.one_or_404(db.select(User).filter_by(username=username))
-            language = user.language
-        except:
-            language = session['language']
-        with open('static/texts-' + language + '.json') as f:
-            data = json.load(f)
-            story_no = random.randint(0, len(data['texts']) - 1)
-            session['story'] = story_no
-            story = data['texts'][story_no]
-            spans = spanify(language, story['text'])
-            eng_spans = data['texts'][story_no]['en-text'] 
-            if (session['language'] == "jp"):       
-                try:
-                    username
-                except:
-                    return render_template('language-guest.html', language=language, spans=spans)
-                return render_template('language.html', language=language, spans=spans, eng_spans=eng_spans)
+    user_id = User.query.filter_by(username=session['user']).first().id
+
+    if request.method == 'POST':
+        if 'word' in request.form:
+            word = request.form['word'].strip()
+            if word:
+                dictInfo = dictLookUp(word)
+
+                # Define initial vocabulary
+                vocab = []
+                for sense in dictInfo.senses:
+                    if len(dictInfo.kanji_forms) > 0:
+                        vocab.append({'chinese_word': str(dictInfo.kanji_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
+                    else:
+                        vocab.append({'chinese_word': str(dictInfo.kana_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
+                for vocab_item in vocab:
+                    if not Vocabulary.query.filter_by(chinese_word=vocab_item['chinese_word'], user_id=user_id).first():
+                        new_vocab = Vocabulary(**vocab_item)
+                        db.session.add(new_vocab)
+                        db.session.commit()
+                        return jsonify({'success': True, 'message': 'Word added successfully'})
+
+
+        # generate_new_story = request.form.get('generate', False)
+        if 'generate' in request.form and request.form['generate'] == 'true':
+            selected_words = session.get('selected_words', [])
+            paragraph_type = session.get('paragraph_type', 'story')
+            language = ""
+            if session['language'] == 'cn':
+                language = "Chinese"
+            elif session['language'] == 'jp':
+                language = "Japanese"
             else:
-                try:
-                    username
-                except:
-                    return render_template('language-guest.html', language=language, spans=story['text'])
-                return render_template('language.html', language=language, spans=story['text'], eng_spans=eng_spans)
+                language = "English"
+            if not selected_words:
+                prompt = f"Generate a random {paragraph_type} of less than 100 words in {language}."
+            else:
+                prompt = f"Create a {paragraph_type} of less than 100 words in {language} including these words: {', '.join(selected_words)}."
+
+            story, trans = generate_story(prompt)  # Assuming generate_story returns a tuple
+            span = spanify(session['language'], story)
+            session['story'] = story
+            return render_template('language.html', language=session['language'], spans=span, story=story)
+
+    # If not POST or no specific action taken, show the language page normally
+    return render_template('language.html')
+@app.route('/save', methods=['GET', 'POST'])
+def save():
+    if 'user' not in session:
+        return redirect('/login')
+
+    user_id = User.query.filter_by(username=session['user']).first().id
+    language = User.query.filter_by(username=session['user']).first().language
+    if request.method == 'POST':
+        story = request.form['save-story']
+        if not Story.query.filter_by(story=story, user_id=user_id).first():
+            story_entry = Story(story=story, user_id=user_id)
+            db.session.add(story_entry)
+            message = "Story saved successfully."
+            message = "Story sucessfully saved!"
+        else:
+            message="Story already saved"
+        db.session.commit()
+        span = spanify(session['language'], story)
+        return jsonify({'success': True, 'message': message})
+    else:
+        return redirect('/read')
+
+@app.route('/stories', methods=['GET', 'POST'])
+def stories():
+    if 'user' not in session:
+        return redirect('/login')
+
+    user_id = User.query.filter_by(username=session['user']).first().id
+    language = User.query.filter_by(username=session['user']).first().language
+    story_query = Story.query.filter_by(user_id=user_id).all()
+    stories = [story.story for story in story_query]
+    if request.method == 'POST':
+        return redirect('/')
+    else:
+        return render_template("stories.html", stories=stories)
+# @app.route('/read', methods=['GET', 'POST'])
+# def read():    
+#     if (request.method == 'POST'):
+#         word = request.form.get('word').replace(' ', '')
+#         dictInfo = dictLookUp(word)
+#         if session['language'] == 'jp':
+#             # if 'user' not in session:
+#             #     return redirect('/login')
+#             user_id = User.query.filter_by(username=session['user']).first().id
+
+#             # Define initial vocabulary
+#             vocab = []
+#             for sense in dictInfo.senses:
+#                 if len(dictInfo.kanji_forms) > 0:
+#                     vocab.append({'chinese_word': str(dictInfo.kanji_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
+#                 else:
+#                     vocab.append({'chinese_word': str(dictInfo.kana_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
+#             for vocab_item in vocab:
+#                 if not Vocabulary.query.filter_by(chinese_word=vocab_item['chinese_word'], user_id=user_id).first():
+#                     new_vocab = Vocabulary(**vocab_item)
+#                     db.session.add(new_vocab)
+#                     db.session.commit()
+#         with open('static/texts-' + session['language'] + '.json') as f:
+#             data = json.load(f)
+#             story_no = session['story']
+#             story = data['texts'][story_no]
+#             spans = spanify(session['language'], story['text'])
+#             eng_spans = data['texts'][story_no]["en-text"]
+#         if (session['language'] == "jp"): # Temporary Fix to allow for comparison between Japanese and Chinese Versions
+#             return render_template('language.html', language=session['language'], spans=spans, eng_spans=eng_spans)
+#         else:
+#             return render_template('language.html', language=session['language'], spans=story['text'], eng_spans=eng_spans)
+#     else:
+#         try: 
+#             username = session['user']
+#             user = db.one_or_404(db.select(User).filter_by(username=username))
+#             language = user.language
+#         except:
+#             language = session['language']
+#         with open('static/texts-' + language + '.json') as f:
+#             data = json.load(f)
+#             story_no = random.randint(0, len(data['texts']) - 1)
+#             session['story'] = story_no
+#             story = data['texts'][story_no]
+#             spans = spanify(language, story['text'])
+#             eng_spans = data['texts'][story_no]['en-text'] 
+#             if (session['language'] == "jp"):       
+#                 try:
+#                     username
+#                 except:
+#                     return render_template('language-guest.html', language=language, spans=spans)
+#                 return render_template('language.html', language=language, spans=spans, eng_spans=eng_spans)
+#             else:
+#                 try:
+#                     username
+#                 except:
+#                     return render_template('language-guest.html', language=language, spans=story['text'])
+#                 return render_template('language.html', language=language, spans=story['text'], eng_spans=eng_spans)
 
 @app.route('/profile')
 def profile():
@@ -272,24 +365,80 @@ def profile():
 
 @app.route('/vocab', methods=['GET', 'POST'])
 def vocab():
-    if (request.method == "POST"):
+    if 'user' not in session:
+        return redirect('/login')
+
+    user_id = User.query.filter_by(username=session['user']).first().id
+
+    if request.method == 'POST':
         if request.form.get('delete'):
-            delete = request.form.get('delete')
-            user = User.query.filter_by(username=session['user']).first()
-            Vocabulary.query.filter_by(user_id=user.id, chinese_word=delete).delete()
+            delete_word = request.form.get('delete')
+            Vocabulary.query.filter_by(user_id=user_id, chinese_word=delete_word).delete()
             db.session.commit()
             return redirect('/vocab')
-        else:
+        elif request.form.get('submit_action') == 'execute_action':
+            selected_words = request.form.getlist('selected_words')
+            paragraph_type = request.form.get('action')
+            # Save selected words and paragraph type in session for later use
+            session['selected_words'] = selected_words
+            session['paragraph_type'] = paragraph_type
+            flash('Your selection has been saved! Go to "Read" to generate your story.', 'info-selection')
             return redirect('/vocab')
+
     else:
-        if 'user' not in session:
-            return redirect('/login')
-        user_id = User.query.filter_by(username=session['user']).first().id
         vocab_list = Vocabulary.query.filter_by(user_id=user_id).all()
         vocab_dict = {'new': [], 'familiar': [], 'confident': []}
         for vocab in vocab_list:
-            vocab_dict[vocab.level].append({'word' : vocab.chinese_word, 'sense' : vocab.translation.split('(')[0], 'pronunciation' : vocab.pronunciation})
+            vocab_dict[vocab.level].append({'word': vocab.chinese_word, 'sense': vocab.translation.split('(')[0], 'pronunciation': vocab.pronunciation})
         return render_template('vocab.html', vocab=vocab_dict)
+
+# @app.route('/vocab', methods=['GET', 'POST'])
+# def vocab():
+#     if 'user' not in session:
+#         return redirect('/login')
+
+#     user_id = User.query.filter_by(username=session['user']).first().id
+
+#     if request.method == 'POST':
+#         if request.form.get('delete'):
+#             # Handle deletion
+#             delete_word = request.form.get('delete')
+#             Vocabulary.query.filter_by(user_id=user_id, chinese_word=delete_word).delete()
+#             db.session.commit()
+#             return redirect('/vocab')
+#         elif request.form.get('submit_action') == 'execute_action':
+#             # Handle story generation
+#             selected_words = request.form.getlist('selected_words')
+#             paragraph_type = request.form.get('action') 
+#             if paragraph_type == 'generate_story':
+#                 selected_type = 'story'
+#             elif paragraph_type == 'generate_email':
+#                 selected_type = 'email'
+#             else:
+#                 selected_type = 'newspaper style'
+#             if not selected_words:
+#                 return "Please select at least one word.", 400
+
+#             # Construct the prompt based on selected words and type.
+#             if selected_words:
+#                 prompt = f"Create a {selected_type} of less than 100 words in Japanese including these words: {', '.join(selected_words)}."
+#             else:
+#                 prompt = f"Generate a random {selected_type} of less than 100 words in Japanese."
+
+#             story, translated_story = generate_story(prompt)  # Assuming generate_story is a function that returns a string
+#             span = spanify(session['language'], story)
+#             if story:
+#                 return render_template('language.html', language=session['language'], spans=span, eng_spans=translated_story)
+#             else:
+#                 return "Failed to generate story due to a network error", 500
+
+#     else:
+#         # GET method for displaying vocab
+#         vocab_list = Vocabulary.query.filter_by(user_id=user_id).all()
+#         vocab_dict = {'new': [], 'familiar': [], 'confident': []}
+#         for vocab in vocab_list:
+#             vocab_dict[vocab.level].append({'word': vocab.chinese_word, 'sense': vocab.translation.split('(')[0], 'pronunciation': vocab.pronunciation})
+#         return render_template('vocab.html', vocab=vocab_dict)
 
 
 @app.route('/seed-vocabulary')
@@ -325,45 +474,80 @@ import requests  # Import the requests library
 import json
 import logging
 from openai import OpenAI
+from flask import request, jsonify, session, redirect
 
-@app.route('/generate-story', methods=['GET'])
-def generate_story():
+
+@app.route('/generate-story', methods=['POST'])
+def generate_story(prompt):
     if 'user' not in session:
         return redirect('/login')
 
-    level = request.args.get('level', default='new')
-    num_words = int(request.args.get('num_words', default=2))
-
-    user_id = User.query.filter_by(username=session['user']).first().id
-    vocab_list = Vocabulary.query.filter_by(user_id=user_id, level=level).all()
-
-    if len(vocab_list) < num_words:
-        return "Not enough words in the selected level", 400
-
-
-    selected_words = random.sample([vocab.chinese_word for vocab in vocab_list], num_words)
-    prompt = f"请用中文写一段大概100个词的段落，包含以下词汇: {', '.join(selected_words)}."
-
-    client = OpenAI(api_key="removed for security reason")
-
-    # Create the chat messages structure for OpenAI API
-    message = [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": prompt}
-    ]
-
     try:
+        # client = OpenAI(api_key="")  # Replace with actual API key
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=message
-            )
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ]
+        )
         story = completion.choices[0].message.content
-        return jsonify({"story": story}), 200
+
+        translation_prompt = f"Translate the following story to English: {story}"
+        translation_completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": translation_prompt}
+            ]
+        )
+        translated_story = translation_completion.choices[0].message.content
+        # jsonify({"story": story}), 200
+        return story, translated_story
     except Exception as e:
         logging.error(f"OpenAI request failed: {e}")
         return "Failed to generate story due to a network error."
 
     return "An unexpected error occurred."
+
+# @app.route('/generate-story', methods=['GET'])
+# def generate_story():
+#     if 'user' not in session:
+#         return redirect('/login')
+
+#     level = request.args.get('level', default='new')
+#     num_words = int(request.args.get('num_words', default=2))
+
+#     user_id = User.query.filter_by(username=session['user']).first().id
+#     vocab_list = Vocabulary.query.filter_by(user_id=user_id, level=level).all()
+
+#     if len(vocab_list) < num_words:
+#         return "Not enough words in the selected level", 400
+
+
+#     selected_words = random.sample([vocab.chinese_word for vocab in vocab_list], num_words)
+#     prompt = f"请用中文写一段大概100个词的段落，包含以下词汇: {', '.join(selected_words)}."
+
+#     client = OpenAI(api_key="removed for security reason")
+
+#     # Create the chat messages structure for OpenAI API
+#     message = [
+#         {"role": "system", "content": "You are a helpful assistant."},
+#         {"role": "user", "content": prompt}
+#     ]
+
+#     try:
+#         completion = client.chat.completions.create(
+#             model="gpt-3.5-turbo",
+#             messages=message
+#             )
+#         story = completion.choices[0].message.content
+#         return jsonify({"story": story}), 200
+#     except Exception as e:
+#         logging.error(f"OpenAI request failed: {e}")
+#         return "Failed to generate story due to a network error."
+
+#     return "An unexpected error occurred."
 
 
 if __name__ == '__main__':

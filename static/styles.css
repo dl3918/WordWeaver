@@ -277,3 +277,69 @@ div.popup{
     border-radius:8px;
     width:150px
 }
+
+.tab {
+    display: inline-block;
+    margin-left: 4em;
+}
+
+.practice-section {
+    background-color: #f4f4f8; /* Light grey background for distinction */
+    padding: 20px;
+    margin-top: 30px; /* Space from the vocabulary list */
+    border-top: 2px solid #3066be; /* Blue top border for visual separation */
+}
+
+.dropdown-style {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 14px;
+    padding: 8px 10px;
+    margin: 5px 5px;
+    background-color: white;
+    border: 1px solid #3066be;
+    border-radius: 5px;
+    width: 30%; /* Full width */
+}
+
+.submit-button {
+    font-family: 'Urbanist', sans-serif;
+    background-color: #3066be;
+    font-size: 14px;
+    color: white;
+    padding: 10px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: block; /* Make the button expand to full width */
+    margin-top: 10px;
+}
+
+.submit-button:hover {
+    background-color: #204a8c;
+}
+
+.delete-button {
+    font-family: 'Urbanist', sans-serif;
+    color: white;
+    background-color: #ff6347; /* Tomato color for delete buttons */
+    border: none;
+    padding: 5px 10px;
+    margin-left: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.generate-button {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 16px;
+    padding: 10px 20px;
+    background-color: #3066be;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.generate-button:hover {
+    background-color: #204a8c;
+}
