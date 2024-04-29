@@ -89,6 +89,7 @@ class User(db.Model):
     language = db.Column(db.String(255), nullable=False, server_default='cn')
     salt = db.Column(db.LargeBinary(255), nullable=False, server_default='')
     vocabularies = db.relationship('Vocabulary', back_populates='user', lazy='dynamic') # include a back reference
+    stories = db.relationship('Story', back_populates='user')
 
 
 class Vocabulary(db.Model):
@@ -100,6 +101,12 @@ class Vocabulary(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     user = db.relationship('User', back_populates='vocabularies')
+
+class Story(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    story = db.Column(db.String(255), nullable=False, unique=True)
+    user = db.relationship('User', back_populates='stories')
 
 with app.app_context():
         db.create_all()
@@ -147,8 +154,8 @@ def signup():
             salt, hash = hash_new_password(password)
             user = User(username=username, password=hash, email=email, salt=salt)
             db.session.add(user)
-            db.session.commit()
             session['user'] = username
+            db.session.commit()
             return redirect('/select+language')
         else:
             return redirect("/")
@@ -230,19 +237,60 @@ def read():
         if 'generate' in request.form and request.form['generate'] == 'true':
             selected_words = session.get('selected_words', [])
             paragraph_type = session.get('paragraph_type', 'story')
-
-            if not selected_words:
-                prompt = f"Generate a random {paragraph_type} of less than 100 words in Japanese."
+            language = ""
+            if session['language'] == 'cn':
+                language = "Chinese"
+            elif session['language'] == 'jp':
+                language = "Japanese"
             else:
-                prompt = f"Create a {paragraph_type} of less than 100 words in Japanese including these words: {', '.join(selected_words)}."
+                language = "English"
+            if not selected_words:
+                prompt = f"Generate a random {paragraph_type} of less than 100 words in {language}."
+            else:
+                prompt = f"Create a {paragraph_type} of less than 100 words in {language} including these words: {', '.join(selected_words)}."
 
-            story, translated_story = generate_story(prompt)  # Assuming generate_story returns a tuple
+            story, trans = generate_story(prompt)  # Assuming generate_story returns a tuple
             span = spanify(session['language'], story)
-            return render_template('language.html', language=session['language'], spans=span, eng_spans=translated_story)
+            session['story'] = story
+            return render_template('language.html', language=session['language'], spans=span, story=story)
 
     # If not POST or no specific action taken, show the language page normally
     return render_template('language.html')
+@app.route('/save', methods=['GET', 'POST'])
+def save():
+    if 'user' not in session:
+        return redirect('/login')
 
+    user_id = User.query.filter_by(username=session['user']).first().id
+    language = User.query.filter_by(username=session['user']).first().language
+    if request.method == 'POST':
+        story = request.form['save-story']
+        if not Story.query.filter_by(story=story, user_id=user_id).first():
+            story_entry = Story(story=story, user_id=user_id)
+            db.session.add(story_entry)
+            message = "Story saved successfully."
+            message = "Story sucessfully saved!"
+        else:
+            message="Story already saved"
+        db.session.commit()
+        span = spanify(session['language'], story)
+        return jsonify({'success': True, 'message': message})
+    else:
+        return redirect('/read')
+
+@app.route('/stories', methods=['GET', 'POST'])
+def stories():
+    if 'user' not in session:
+        return redirect('/login')
+
+    user_id = User.query.filter_by(username=session['user']).first().id
+    language = User.query.filter_by(username=session['user']).first().language
+    story_query = Story.query.filter_by(user_id=user_id).all()
+    stories = [story.story for story in story_query]
+    if request.method == 'POST':
+        return redirect('/')
+    else:
+        return render_template("stories.html", stories=stories)
 # @app.route('/read', methods=['GET', 'POST'])
 # def read():    
 #     if (request.method == 'POST'):
@@ -427,7 +475,6 @@ import json
 import logging
 from openai import OpenAI
 from flask import request, jsonify, session, redirect
-
 
 @app.route('/generate-story', methods=['POST'])
 def generate_story(prompt):

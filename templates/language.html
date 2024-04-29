@@ -42,9 +42,9 @@
                                 </form>
                             </div>
                             <div class="sidebar-item" >
-                                <form action="/read" style="width:100%">
+                                <form action="/stories" style="width:100%">
                                     <button class="white long smallcaps-text" style="width:100%; color:black; border:0px">
-                                        write
+                                        saved stories
                                     </button>
                                 </form>
                             </div>
@@ -111,7 +111,13 @@
                             <div style="flex-direction: column;">
                                 <div class="left aligned column main-col" style="max-width: 800px">
                                     <div class="center-container" id="text" style="text-align: left;">
-                                        <span style="position:relative;" class="inline">{{ eng_spans }}</span>
+                                        <form action="/save" method="POST">
+                                            <div class="center-container" style="flex-direction: row;">
+                                                <input type="hidden" value="{{ story }}" id="save-story" name="save-story">
+                                                <span>Liked this story? Save it to read later!</span>
+                                                <button value="{{ story }}" class="submit-button save-story-button">Save Story</button>
+                                            </div>
+                                        </form>                                    
                                     </div>
                                 </div>
                             </div>
@@ -120,8 +126,8 @@
                         <div style="flex-direction: column;">
                             <div class="left aligned column main-col" style="max-width: 800px">
                                 <div class="center-container" id="text" style="text-align: left;">
-                                    <form action="/read" method="POST">
-                                        <button type="submit" name="generate" value="true" class="generate-button">Generate</button>
+                                    <form action="/read" method="POST" style="display: flex; justify-content: center;">
+                                        <button type="submit" name="generate" value="true" class="generate-button">Generate New Story</button>
                                     </form>
                                 </div>
                             </div>
@@ -151,11 +157,35 @@
                 })
                 .catch(error => console.error('Error adding word:', error));
             }
+            function saveStory(story) {
+                fetch('/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'save-story=' + encodeURIComponent(story)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);  // Or update a status message on your page
+                    } else {
+                        alert('Story already saved');
+                    }
+                })
+                .catch(error => console.error('Error saving story:', error));
+            }
 
             document.querySelectorAll('.add-to-vocab-button').forEach(button => {
                 button.addEventListener('click', function(event) {
                     event.preventDefault();
                     addWordToVocab(this.getAttribute('data-word'));
+                });
+            });
+            document.querySelectorAll('.save-story-button').forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    saveStory(this.getAttribute('value'));
                 });
             });
             // document.addEventListener('DOMContentLoaded', function() {
