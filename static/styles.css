@@ -259,6 +259,7 @@ span.inline {
     margin-bottom: 20px;
     display: inline-block;
     cursor: pointer;
+    font-size: large;
 }
 
 span.inline:hover {

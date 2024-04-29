@@ -99,7 +99,7 @@ class Vocabulary(db.Model):
     pronunciation = db.Column(db.String(100), server_default='')
     level = db.Column(db.String(50), nullable=False)  # Values: 'new', 'familiar', 'confident'
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
+    seen = db.Column(db.Integer, default=0)
     user = db.relationship('User', back_populates='vocabularies')
 
 class Story(db.Model):
@@ -235,7 +235,30 @@ def read():
 
         # generate_new_story = request.form.get('generate', False)
         if 'generate' in request.form and request.form['generate'] == 'true':
+            new = [i for i in Vocabulary.query.filter(Vocabulary.seen <= 5).filter_by(user_id=user_id)]
+            comfortable = [i for i in Vocabulary.query.filter(
+                Vocabulary.seen > 5, Vocabulary.seen <= 10
+                ).filter_by(user_id=user_id)   ]         
+            advanced = [i for i in Vocabulary.query.filter(Vocabulary.seen > 10).filter_by(user_id=user_id)]
+            if (len(new) + len(comfortable) + len(advanced)) > 10:
+                indices = [{'set': new, 'index' : random.randint(0,len(new - 1))},
+                           {'set': new, 'index' : random.randint(0,len(new - 1))},
+                           {'set': new, 'index' : random.randint(0,len(new - 1))},
+                           {'set': new, 'index' : random.randint(0,len(new - 1))},
+                           {'set': new, 'index' : random.randint(0,len(new - 1))},
+                           {'set': new, 'index' : random.randint(0,len(new - 1))},
+                           {'set': comfortable, 'index' : random.randint(0,len(comfortable - 1))},
+                           {'set': comfortable, 'index' : random.randint(0,len(comfortable - 1))},
+                           {'set': comfortable, 'index' : random.randint(0,len(comfortable - 1))},
+                           {'set': advanced, 'index' : random.randint(0,len(advanced - 1))}]
+            else:
+                indices = [{'set': new, 'index' : i} for i in range(len(new))] + [{'set': comfortable, 'index' : i} for i in range(len(comfortable))] + [{'set': advanced, 'index' : i} for i in range(len(advanced))]
             selected_words = session.get('selected_words', [])
+            selected_words = [index['set'][index['index']].chinese_word for index in indices]
+            for index in indices:
+                v = Vocabulary.query.filter_by(chinese_word=index['set'][index['index']].chinese_word).first()
+                v.seen += 1
+                db.session.commit()
             paragraph_type = session.get('paragraph_type', 'story')
             language = ""
             if session['language'] == 'cn':
@@ -251,11 +274,19 @@ def read():
 
             story, trans = generate_story(prompt)  # Assuming generate_story returns a tuple
             span = spanify(session['language'], story)
+            for i in span:
+                i['sense'] = [j for j in dictLookUp(i['lemma'])]
             session['story'] = story
             return render_template('language.html', language=session['language'], spans=span, story=story)
-
     # If not POST or no specific action taken, show the language page normally
-    return render_template('language.html')
+    if 'story' in session:
+        span = spanify(session['language'], session['story'])
+        for i in span:
+            i['sense'] = [j for j in dictLookUp(i['lemma'])]
+        return render_template('language.html', language=session['language'], spans=span, story=session['story'])
+
+    else:
+        return render_template('language.html')
 @app.route('/save', methods=['GET', 'POST'])
 def save():
     if 'user' not in session:
@@ -286,11 +317,18 @@ def stories():
     user_id = User.query.filter_by(username=session['user']).first().id
     language = User.query.filter_by(username=session['user']).first().language
     story_query = Story.query.filter_by(user_id=user_id).all()
-    stories = [story.story for story in story_query]
     if request.method == 'POST':
-        return redirect('/')
+        if 'load' in request.form:
+            session.pop('story', None)
+            session['story'] = Story.query.filter_by(id=request.form['load']).first().story
+            return redirect('/read')
+        elif 'delete' in request.form:
+            session.pop('story', None)
+            Story.query.filter_by(user_id=user_id, id=request.form['delete']).delete()
+            db.session.commit()
+            return redirect('/stories')
     else:
-        return render_template("stories.html", stories=stories)
+        return render_template("stories.html", stories=story_query)
 # @app.route('/read', methods=['GET', 'POST'])
 # def read():    
 #     if (request.method == 'POST'):
@@ -463,7 +501,9 @@ def seed_vocabulary():
             if not Vocabulary.query.filter_by(chinese_word=vocab['chinese_word'], user_id=user_id).first():
                 new_vocab = Vocabulary(**vocab)
                 db.session.add(new_vocab)
-        
+            else:
+                v = Vocabulary.query.filter_by(chinese_word=vocab['chinese_word'], user_id=user_id).first()
+                v.seen = 0
         db.session.commit()
         return "Vocabulary seeded successfully!"
 
