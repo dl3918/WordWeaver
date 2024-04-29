@@ -149,7 +149,12 @@
                             <div class="left aligned column main-col" style="max-width: 800px">
                                 <div class="center-container" id="text" style="text-align: left;">
                                     <form action="/read" method="POST" style="display: flex; justify-content: center;">
-                                        <button type="submit" name="generate" value="true" class="generate-button">Generate New Story</button>
+                                            <select name="paragraph_type" class="dropdown-style">
+                                                <option value="story">Generate Story</option>
+                                                <option value="email">Generate Email</option>
+                                                <option value="newspaper">Generate Newspaper</option>
+                                            </select>
+                                            <button type="submit" name="generate" value="true" class="generate-button">Submit</button>
                                     </form>
                                 </div>
                             </div>
