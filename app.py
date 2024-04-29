@@ -476,7 +476,6 @@ import logging
 from openai import OpenAI
 from flask import request, jsonify, session, redirect
 
-
 @app.route('/generate-story', methods=['POST'])
 def generate_story(prompt):
     if 'user' not in session:
