@@ -258,6 +258,10 @@ def read():
             for index in indices:
                 v = Vocabulary.query.filter_by(chinese_word=index['set'][index['index']].chinese_word).first()
                 v.seen += 1
+                if v.seen > 5 and v.seen <= 10:
+                    v.level = "familiar"
+                elif v.seen > 10:
+                    v.level = "confident"
                 db.session.commit()
             paragraph_type = session.get('paragraph_type', 'story')
             language = ""
@@ -282,7 +286,10 @@ def read():
     if 'story' in session:
         span = spanify(session['language'], session['story'])
         for i in span:
-            i['sense'] = [j for j in dictLookUp(i['lemma'])]
+            if 'lemma' in i:
+                i['sense'] = [j for j in dictLookUp(i['lemma'])]
+            else:
+                ()
         return render_template('language.html', language=session['language'], spans=span, story=session['story'])
 
     else:
