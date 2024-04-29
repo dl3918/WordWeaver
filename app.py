@@ -166,6 +166,7 @@ def logout():
     session.pop('user', None)
     session.pop('language', None)
     session.pop('story', None)
+    session.pop('selected_words', None)
     return redirect('/')
 
 @app.route('/select+language', methods=['GET', 'POST'])
@@ -256,6 +257,7 @@ def read():
                 Vocabulary.seen > 5, Vocabulary.seen <= 10
                 ).filter_by(user_id=user_id)   ]         
             advanced = [i for i in Vocabulary.query.filter(Vocabulary.seen > 10).filter_by(user_id=user_id)]
+            indices = []
             if (len(new) + len(comfortable) + len(advanced)) > 10:
                 if len(advanced) >= 1 and len(comfortable) >= 3 and len(new) >= 1:
                     indices = [{'set': new, 'index' : random.randint(0,len(new) - 1)},
@@ -293,8 +295,8 @@ def read():
             else:
                 indices = [{'set': new, 'index' : i} for i in range(len(new))] + [{'set': comfortable, 'index' : i} for i in range(len(comfortable))] + [{'set': advanced, 'index' : i} for i in range(len(advanced))]
             selected_words = session.get('selected_words', [])
-            selected_words = [index['set'][index['index']].chinese_word for index in indices]
-            paragraph_type = session.get('paragraph_type', 'story')
+            selected_words += [index['set'][index['index']].chinese_word for index in indices]
+            paragraph_type = request.form.get('paragraph_type')
             language = ""
             if session['language'] == 'cn':
                 language = "Chinese"
@@ -369,6 +371,7 @@ def stories():
     if request.method == 'POST':
         if 'load' in request.form:
             session.pop('story', None)
+            session.pop('selected_words', None)
             session['story'] = Story.query.filter_by(id=request.form['load']).first().story
             return redirect('/read')
         elif 'delete' in request.form:
