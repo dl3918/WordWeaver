@@ -344,3 +344,42 @@ div.popup{
 .generate-button:hover {
     background-color: #204a8c;
 }
+
+.hoverel {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .hoverel .hovertext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+  
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+  }
+  
+  .hoverel:hover .hovertext {
+    visibility: visible;
+  }
+
+  .hoverel .hovertext::after {
+    content: " ";
+    position: absolute;
+    top: 50%;
+    right: 100%; /* To the left of the tooltip */
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent black transparent transparent;
+  }
+
+  .hoverel .hovertext {
+    top: 5px;
+    left: 120%;
+  }

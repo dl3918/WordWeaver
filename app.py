@@ -181,6 +181,7 @@ def select_language():
                 user.language = language
         except:
             print()
+        session.pop('language', None)
         session['language'] = language
         db.session.commit()
         return redirect('/read')
@@ -199,16 +200,31 @@ def spanify(language, text):
                     spans.append({'id' : id, 'orth' : token.orth_, 'lemma' : token.lemma_})
                     id += 1
     elif (language == 'cn'):
-        id = 0
-        for i in text:
-            spans.append({'id': id, 'orth' : i})
-            id += 1
+        spans.append({'id': 0, 'orth' : text})
     return spans
 
 @app.route('/read', methods=['GET', 'POST'])
 def read():
     if 'user' not in session:
-        return redirect('/login')
+        if 'story' not in session:
+            paragraph_type = session.get('paragraph_type', 'story')
+            language = ""
+            if session['language'] == 'cn':
+                language = "Chinese"
+            elif session['language'] == 'jp':
+                language = "Japanese"
+            else:
+                language = "English"
+            prompt = f"Generate a random {paragraph_type} of about than 100 words in {language}."
+            story, trans = generate_story(prompt)  # Assuming generate_story returns a tuple
+        else:
+            story = session['story']
+        span = spanify(session['language'], story)
+        if session['language'] == 'jp':
+            for i in span:
+                i['sense'] = [j for j in dictLookUp(i['lemma'])]
+        session['story'] = story
+        return render_template('language-guest.html', spans=span, story=story, language=session['language'])
 
     user_id = User.query.filter_by(username=session['user']).first().id
 
@@ -241,28 +257,43 @@ def read():
                 ).filter_by(user_id=user_id)   ]         
             advanced = [i for i in Vocabulary.query.filter(Vocabulary.seen > 10).filter_by(user_id=user_id)]
             if (len(new) + len(comfortable) + len(advanced)) > 10:
-                indices = [{'set': new, 'index' : random.randint(0,len(new - 1))},
-                           {'set': new, 'index' : random.randint(0,len(new - 1))},
-                           {'set': new, 'index' : random.randint(0,len(new - 1))},
-                           {'set': new, 'index' : random.randint(0,len(new - 1))},
-                           {'set': new, 'index' : random.randint(0,len(new - 1))},
-                           {'set': new, 'index' : random.randint(0,len(new - 1))},
-                           {'set': comfortable, 'index' : random.randint(0,len(comfortable - 1))},
-                           {'set': comfortable, 'index' : random.randint(0,len(comfortable - 1))},
-                           {'set': comfortable, 'index' : random.randint(0,len(comfortable - 1))},
-                           {'set': advanced, 'index' : random.randint(0,len(advanced - 1))}]
+                if len(advanced) >= 1 and len(comfortable) >= 3 and len(new) >= 1:
+                    indices = [{'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': comfortable, 'index' : random.randint(0,len(comfortable) - 1)},
+                            {'set': comfortable, 'index' : random.randint(0,len(comfortable) - 1)},
+                            {'set': comfortable, 'index' : random.randint(0,len(comfortable) - 1)},
+                            {'set': advanced, 'index' : random.randint(0,len(advanced) - 1)}]
+                elif len(advanced) <= 0 and len(comfortable) >= 3 and len(new) >= 1:
+                    indices = [{'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(comfortable) - 1)},
+                            {'set': comfortable, 'index' : random.randint(0,len(comfortable) - 1)},
+                            {'set': comfortable, 'index' : random.randint(0,len(comfortable) - 1)},
+                            {'set': comfortable, 'index' : random.randint(0,len(advanced) - 1)}]
+                elif len(advanced) <= 0 and len(comfortable) <= 0 and len(new) >= 1:
+                    [{'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(new) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(comfortable) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(comfortable) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(comfortable) - 1)},
+                            {'set': new, 'index' : random.randint(0,len(advanced) - 1)}]
             else:
                 indices = [{'set': new, 'index' : i} for i in range(len(new))] + [{'set': comfortable, 'index' : i} for i in range(len(comfortable))] + [{'set': advanced, 'index' : i} for i in range(len(advanced))]
             selected_words = session.get('selected_words', [])
             selected_words = [index['set'][index['index']].chinese_word for index in indices]
-            for index in indices:
-                v = Vocabulary.query.filter_by(chinese_word=index['set'][index['index']].chinese_word).first()
-                v.seen += 1
-                if v.seen > 5 and v.seen <= 10:
-                    v.level = "familiar"
-                elif v.seen > 10:
-                    v.level = "confident"
-                db.session.commit()
             paragraph_type = session.get('paragraph_type', 'story')
             language = ""
             if session['language'] == 'cn':
@@ -272,28 +303,39 @@ def read():
             else:
                 language = "English"
             if not selected_words:
-                prompt = f"Generate a random {paragraph_type} of less than 100 words in {language}."
+                prompt = f"Generate a random {paragraph_type} of about 100 words in {language}."
             else:
-                prompt = f"Create a {paragraph_type} of less than 100 words in {language} including these words: {', '.join(selected_words)}."
+                prompt = f"Create a {paragraph_type} of about 100 words in {language} including these words: {', '.join(selected_words)}."
 
             story, trans = generate_story(prompt)  # Assuming generate_story returns a tuple
+            for index in indices:
+                if index['set'][index['index']].chinese_word in story:
+                    v = Vocabulary.query.filter_by(chinese_word=index['set'][index['index']].chinese_word).first()
+                    v.seen += 1
+                    if v.seen > 5 and v.seen <= 10:
+                        v.level = "familiar"
+                    elif v.seen > 10:
+                        v.level = "confident"
+                    db.session.commit()
             span = spanify(session['language'], story)
-            for i in span:
-                i['sense'] = [j for j in dictLookUp(i['lemma'])]
+            if session['language'] == 'jp':
+                for i in span:
+                    i['sense'] = [j for j in dictLookUp(i['lemma'])]
             session['story'] = story
             return render_template('language.html', language=session['language'], spans=span, story=story)
-    # If not POST or no specific action taken, show the language page normally
-    if 'story' in session:
-        span = spanify(session['language'], session['story'])
-        for i in span:
-            if 'lemma' in i:
-                i['sense'] = [j for j in dictLookUp(i['lemma'])]
-            else:
-                ()
-        return render_template('language.html', language=session['language'], spans=span, story=session['story'])
-
     else:
-        return render_template('language.html')
+        # If not POST or no specific action taken, show the language page normally
+        if 'story' in session:
+            print(session['story'])
+            span = spanify(session['language'], session['story'])
+            if session['language'] == 'jp':
+                for i in span:
+                    if 'lemma' in i:
+                        i['sense'] = [j for j in dictLookUp(i['lemma'])]
+            return render_template('language.html', language=session['language'], spans=span, story=session['story'])
+
+        else:
+            return render_template('language.html')
 @app.route('/save', methods=['GET', 'POST'])
 def save():
     if 'user' not in session:
@@ -525,9 +567,6 @@ from flask import request, jsonify, session, redirect
 
 @app.route('/generate-story', methods=['POST'])
 def generate_story(prompt):
-    if 'user' not in session:
-        return redirect('/login')
-
     try:
         # client = OpenAI(api_key="")  # Replace with actual API key
         completion = client.chat.completions.create(
