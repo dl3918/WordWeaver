@@ -63,6 +63,7 @@ def dictLookUp(string):
         return out[0]
     else: return out
 
+# Relevant concept: user
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -75,7 +76,7 @@ class User(db.Model):
     vocabularies = db.relationship('Vocabulary', back_populates='user', lazy='dynamic') # include a back reference
     stories = db.relationship('Story', back_populates='user')
 
-
+# Revelant concept: vocabulary
 class Vocabulary(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     chinese_word = db.Column(db.String(100), nullable=False)
@@ -103,6 +104,7 @@ def home():
         return redirect('/read')
     return render_template('home.html')
 
+# Relevant concept: user
 @app.route('/login', methods=['GET','POST'])
 def login():
     if (request.method == 'POST'):
@@ -123,7 +125,7 @@ def login():
             return render_template('login.html', incorrect=True)
     else:
         return render_template('login.html', incorrect=False)
-
+# Relevant concept: user
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if (request.method != 'POST'):
@@ -143,7 +145,7 @@ def signup():
             return redirect('/select+language')
         else:
             return redirect("/")
-
+# Relevant concept: user
 @app.route('/logout')
 def logout():
     # remove the username from the session if it's there
@@ -153,6 +155,7 @@ def logout():
     session.pop('selected_words', None)
     return redirect('/')
 
+# Revelant concept: language
 @app.route('/select+language', methods=['GET', 'POST'])
 def select_language():
     if (request.method != 'POST'):
@@ -171,7 +174,7 @@ def select_language():
         db.session.commit()
         return redirect('/read')
     
-
+# Revelant concept: language
 def spanify(language, text):
     spans = []
     if (language == 'jp'):
@@ -191,7 +194,7 @@ def spanify(language, text):
 @app.route('/read', methods=['GET', 'POST'])
 def read():
     if 'user' not in session:
-        if 'story' not in session:
+        if 'story' not in session: # Relevant Concept: story
             paragraph_type = session.get('paragraph_type', 'story')
             language = ""
             if session['language'] == 'cn':
@@ -213,13 +216,14 @@ def read():
 
     user_id = User.query.filter_by(username=session['user']).first().id
 
-    if request.method == 'POST':
+    if request.method == 'POST': # Relevant concept: vocabulary
         if 'word' in request.form:
             word = request.form['word'].strip()
             if word:
                 dictInfo = dictLookUp(word)
 
                 # Define initial vocabulary
+                # Revelant concept: vocabulary
                 vocab = []
                 for sense in dictInfo.senses:
                     if len(dictInfo.kanji_forms) > 0:
@@ -296,6 +300,7 @@ def read():
             story, trans = generate_story(prompt)  # Assuming generate_story returns a tuple
             for index in indices:
                 if index['set'][index['index']].chinese_word in story:
+                    # Relevant concept: vocabulary
                     v = Vocabulary.query.filter_by(chinese_word=index['set'][index['index']].chinese_word).first()
                     v.seen += 1
                     if v.seen > 5 and v.seen <= 10:
@@ -311,7 +316,7 @@ def read():
             return render_template('language.html', language=session['language'], spans=span, story=story)
     else:
         # If not POST or no specific action taken, show the language page normally
-        if 'story' in session:
+        if 'story' in session: # Relevant Concept: story
             print(session['story'])
             span = spanify(session['language'], session['story'])
             if session['language'] == 'jp':
@@ -329,7 +334,7 @@ def save():
 
     user_id = User.query.filter_by(username=session['user']).first().id
     language = User.query.filter_by(username=session['user']).first().language
-    if request.method == 'POST':
+    if request.method == 'POST': # Relevant Concept: story
         story = request.form['save-story']
         if not Story.query.filter_by(story=story, user_id=user_id).first():
             story_entry = Story(story=story, user_id=user_id)
@@ -344,6 +349,7 @@ def save():
     else:
         return redirect('/read')
 
+# Relevant Concept: story
 @app.route('/stories', methods=['GET', 'POST'])
 def stories():
     if 'user' not in session:
@@ -352,7 +358,7 @@ def stories():
     user_id = User.query.filter_by(username=session['user']).first().id
     language = User.query.filter_by(username=session['user']).first().language
     story_query = Story.query.filter_by(user_id=user_id).all()
-    if request.method == 'POST':
+    if request.method == 'POST': 
         if 'load' in request.form:
             session.pop('story', None)
             session.pop('selected_words', None)
@@ -385,7 +391,7 @@ def vocab():
         return redirect('/login')
 
     user_id = User.query.filter_by(username=session['user']).first().id
-
+    # Relevant concept: vocabulary
     if request.method == 'POST':
         if request.form.get('delete'):
             delete_word = request.form.get('delete')
@@ -445,6 +451,7 @@ import logging
 from openai import OpenAI
 from flask import request, jsonify, session, redirect
 
+# Relevant Concept: story
 @app.route('/generate-story', methods=['POST'])
 def generate_story(prompt):
     try:

@@ -105,7 +105,8 @@
                                             </div></i>
                                         </span>
                                     </h2>
-                                    <ul>
+                                    <ul> 
+                                        <!-- Relevant concept: vocabulary -->
                                         {% for word in words %}
                                                 <input type="checkbox" name="selected_words" value="{{ word.word }}" id="{{ word.word }}">
                                                 <label for="{{ word.word }}">{{ word.word }}</label>
