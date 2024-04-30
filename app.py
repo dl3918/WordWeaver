@@ -21,22 +21,6 @@ jam = Jamdict()
 
 import spacy
 nlp = spacy.load("ja_ginza")
-# doc = nlp('銀座でランチをご一緒しましょう。')
-# for sent in doc.sents:
-#     for token in sent:
-#         print(
-#             token.i,
-#             token.orth_,
-#             token.lemma_,
-#             token.norm_,
-#             token.morph.get("Reading"),
-#             token.pos_,
-#             token.morph.get("Inflection"),
-#             token.tag_,
-#             token.dep_,
-#             token.head.i,
-#         )
-#     print('EOS')
 import openai
 import spacy
 os.environ['FLASK_ENV'] = 'development'  # Activates development environment, which turns on the debugger and reloader
@@ -381,64 +365,6 @@ def stories():
             return redirect('/stories')
     else:
         return render_template("stories.html", stories=story_query)
-# @app.route('/read', methods=['GET', 'POST'])
-# def read():    
-#     if (request.method == 'POST'):
-#         word = request.form.get('word').replace(' ', '')
-#         dictInfo = dictLookUp(word)
-#         if session['language'] == 'jp':
-#             # if 'user' not in session:
-#             #     return redirect('/login')
-#             user_id = User.query.filter_by(username=session['user']).first().id
-
-#             # Define initial vocabulary
-#             vocab = []
-#             for sense in dictInfo.senses:
-#                 if len(dictInfo.kanji_forms) > 0:
-#                     vocab.append({'chinese_word': str(dictInfo.kanji_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
-#                 else:
-#                     vocab.append({'chinese_word': str(dictInfo.kana_forms[0]), 'level': 'new', 'user_id': user_id, 'translation' : str(sense), 'pronunciation': str(dictInfo.kana_forms[0])})
-#             for vocab_item in vocab:
-#                 if not Vocabulary.query.filter_by(chinese_word=vocab_item['chinese_word'], user_id=user_id).first():
-#                     new_vocab = Vocabulary(**vocab_item)
-#                     db.session.add(new_vocab)
-#                     db.session.commit()
-#         with open('static/texts-' + session['language'] + '.json') as f:
-#             data = json.load(f)
-#             story_no = session['story']
-#             story = data['texts'][story_no]
-#             spans = spanify(session['language'], story['text'])
-#             eng_spans = data['texts'][story_no]["en-text"]
-#         if (session['language'] == "jp"): # Temporary Fix to allow for comparison between Japanese and Chinese Versions
-#             return render_template('language.html', language=session['language'], spans=spans, eng_spans=eng_spans)
-#         else:
-#             return render_template('language.html', language=session['language'], spans=story['text'], eng_spans=eng_spans)
-#     else:
-#         try: 
-#             username = session['user']
-#             user = db.one_or_404(db.select(User).filter_by(username=username))
-#             language = user.language
-#         except:
-#             language = session['language']
-#         with open('static/texts-' + language + '.json') as f:
-#             data = json.load(f)
-#             story_no = random.randint(0, len(data['texts']) - 1)
-#             session['story'] = story_no
-#             story = data['texts'][story_no]
-#             spans = spanify(language, story['text'])
-#             eng_spans = data['texts'][story_no]['en-text'] 
-#             if (session['language'] == "jp"):       
-#                 try:
-#                     username
-#                 except:
-#                     return render_template('language-guest.html', language=language, spans=spans)
-#                 return render_template('language.html', language=language, spans=spans, eng_spans=eng_spans)
-#             else:
-#                 try:
-#                     username
-#                 except:
-#                     return render_template('language-guest.html', language=language, spans=story['text'])
-#                 return render_template('language.html', language=language, spans=story['text'], eng_spans=eng_spans)
 
 @app.route('/profile')
 def profile():
@@ -481,55 +407,6 @@ def vocab():
         for vocab in vocab_list:
             vocab_dict[vocab.level].append({'word': vocab.chinese_word, 'sense': vocab.translation.split('(')[0], 'pronunciation': vocab.pronunciation})
         return render_template('vocab.html', vocab=vocab_dict)
-
-# @app.route('/vocab', methods=['GET', 'POST'])
-# def vocab():
-#     if 'user' not in session:
-#         return redirect('/login')
-
-#     user_id = User.query.filter_by(username=session['user']).first().id
-
-#     if request.method == 'POST':
-#         if request.form.get('delete'):
-#             # Handle deletion
-#             delete_word = request.form.get('delete')
-#             Vocabulary.query.filter_by(user_id=user_id, chinese_word=delete_word).delete()
-#             db.session.commit()
-#             return redirect('/vocab')
-#         elif request.form.get('submit_action') == 'execute_action':
-#             # Handle story generation
-#             selected_words = request.form.getlist('selected_words')
-#             paragraph_type = request.form.get('action') 
-#             if paragraph_type == 'generate_story':
-#                 selected_type = 'story'
-#             elif paragraph_type == 'generate_email':
-#                 selected_type = 'email'
-#             else:
-#                 selected_type = 'newspaper style'
-#             if not selected_words:
-#                 return "Please select at least one word.", 400
-
-#             # Construct the prompt based on selected words and type.
-#             if selected_words:
-#                 prompt = f"Create a {selected_type} of less than 100 words in Japanese including these words: {', '.join(selected_words)}."
-#             else:
-#                 prompt = f"Generate a random {selected_type} of less than 100 words in Japanese."
-
-#             story, translated_story = generate_story(prompt)  # Assuming generate_story is a function that returns a string
-#             span = spanify(session['language'], story)
-#             if story:
-#                 return render_template('language.html', language=session['language'], spans=span, eng_spans=translated_story)
-#             else:
-#                 return "Failed to generate story due to a network error", 500
-
-#     else:
-#         # GET method for displaying vocab
-#         vocab_list = Vocabulary.query.filter_by(user_id=user_id).all()
-#         vocab_dict = {'new': [], 'familiar': [], 'confident': []}
-#         for vocab in vocab_list:
-#             vocab_dict[vocab.level].append({'word': vocab.chinese_word, 'sense': vocab.translation.split('(')[0], 'pronunciation': vocab.pronunciation})
-#         return render_template('vocab.html', vocab=vocab_dict)
-
 
 @app.route('/seed-vocabulary')
 def seed_vocabulary():
@@ -597,46 +474,6 @@ def generate_story(prompt):
         return "Failed to generate story due to a network error."
 
     return "An unexpected error occurred."
-
-# @app.route('/generate-story', methods=['GET'])
-# def generate_story():
-#     if 'user' not in session:
-#         return redirect('/login')
-
-#     level = request.args.get('level', default='new')
-#     num_words = int(request.args.get('num_words', default=2))
-
-#     user_id = User.query.filter_by(username=session['user']).first().id
-#     vocab_list = Vocabulary.query.filter_by(user_id=user_id, level=level).all()
-
-#     if len(vocab_list) < num_words:
-#         return "Not enough words in the selected level", 400
-
-
-#     selected_words = random.sample([vocab.chinese_word for vocab in vocab_list], num_words)
-#     prompt = f"请用中文写一段大概100个词的段落，包含以下词汇: {', '.join(selected_words)}."
-
-#     client = OpenAI(api_key="removed for security reason")
-
-#     # Create the chat messages structure for OpenAI API
-#     message = [
-#         {"role": "system", "content": "You are a helpful assistant."},
-#         {"role": "user", "content": prompt}
-#     ]
-
-#     try:
-#         completion = client.chat.completions.create(
-#             model="gpt-3.5-turbo",
-#             messages=message
-#             )
-#         story = completion.choices[0].message.content
-#         return jsonify({"story": story}), 200
-#     except Exception as e:
-#         logging.error(f"OpenAI request failed: {e}")
-#         return "Failed to generate story due to a network error."
-
-#     return "An unexpected error occurred."
-
 
 if __name__ == '__main__':
     app.run(debug=True)

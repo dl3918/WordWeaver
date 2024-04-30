@@ -223,23 +223,9 @@
                 } else {
                     console.error('Annotation library or container not available.');
                 }
-                // setTimeout(() => {
-                //     enhanceAnnotations();
-                // }, 1000);
+
             });
-//             function enhanceAnnotations() {
-//                 // Assuming the API wraps annotations in <span class="annotation"> tags
-//                 var annotations = document.querySelectorAll('#mySpan .annotation');
-//                 console.log(annotations);
-//                 annotations.forEach(function(annotation) {
-//                     var button = document.createElement('button');
-//                     button.textContent = "I don't know this";
-//                     button.onclick = function() {
-//                         addToVocab(annotation.textContent); // Implement this function to handle adding to vocab
-//                     };
-//                     annotation.appendChild(button);
-//                 });
-// }
+
 
             function displayText(id) {
                 document.getElementById(id).setAttribute('style', "display: inline-block");
