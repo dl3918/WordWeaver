@@ -72,6 +72,17 @@
                                 {% endfor %}
                             {% endwith %}
                             <h1 class="huge">Your Vocabulary List (Check the box to select a word)</h1>
+                            <div class="practice-section">
+
+                                <h1 class="huge">Let's practice by exploring new stories that include your selected words! </h1>
+                                
+                                <button type="submit" name="submit_action" value="execute_action">Save Word Preferences</button>
+                                <span class="hoverel"><i style="font-size:24px;margin-left:auto" class="fa">&#xf059;
+                                    <div class="hovertext" style="text-align: left; padding: 5px 10px; font-size: medium;width:300px; background: #aaa;">
+                                        <p>If no words are selected by you, WordWeaver will automatically choose some words from your vocabulary list. The more recently you added the word, the more frequently it will appear! You may expect a small percentage from 'New'; 'Familiar' words are selected less often than new words, while 'Confident' words are chosen infrequently. </p>
+                                    </div></i>
+                                </span>
+                            </div>
                             <div class="preamble-section" style="margin: 20px; padding: 20px; background-color: #f4f4f8; border-left: 5px solid #3066be;">
                                 <h2>What do these levels mean?</h2>
                                 <p>Hover on the <i style="font-size:24px" class="fa">&#xf059;</i>
@@ -85,11 +96,11 @@
                                             <div class="hovertext" style="text-align: left; padding: 5px 10px; font-size: medium;width:300px; background: #aaa;">
                                                 <p>The {{ level.capitalize() }} class represents one of the three levels of memorization that WordWeaver Tracks. </p>
                                                 <p>{% if level == "new" %}
-                                                    {{ level.capitalize() }} words are those words which you have only encountered 1-5 times. WordWeaver will automatically select a small percentage of these words unless you specifically select some that you want to encounter. The more recently you added the word, the more frequently it will appear!
+                                                    {{ level.capitalize() }} words are those words which you have only encountered 1-5 times. 
                                                     {% elif level == "familiar" %}  
-                                                    {{ level.capitalize() }} words are those words which you have encountered 5-10 times. WordWeaver will automatically select these words less often than new words unless you specifically select some that you want to encounter.
+                                                    {{ level.capitalize() }} words are those words which you have encountered 5-10 times.
                                                     {% elif level == "confident" %}  
-                                                    {{ level.capitalize() }} words are those words which you have encountered more than 10 times. WordWeaver will infrequently select these words unless you specifically select some that you want to encounter.
+                                                    {{ level.capitalize() }} words are those words which you have encountered more than 10 times. 
                                                 {% endif %}</p>
                                             </div></i>
                                         </span>
@@ -107,12 +118,7 @@
                                     </ul>
                                 {% endfor %}
                                 
-                                <div class="practice-section">
-
-                                    <h1 class="huge">Let's practice by exploring new stories that include your selected words! </h1>
-                                    
-                                    <button type="submit" name="submit_action" value="execute_action">Save Word Preferences</button>
-                                </div>
+                                
                             </form>
                             
                         </div> 
